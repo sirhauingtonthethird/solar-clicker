@@ -121,7 +121,152 @@
     .app {
       width: min(1180px, 100%);
       margin: 0 auto;
-      padding: 0 24px 30px;
+      padding: 8px 24px 30px;
+    }
+
+
+    .singularity-hud {
+      position: sticky;
+      top: 8px;
+      z-index: 46;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: fit-content;
+      max-width: calc(100vw - 32px);
+      height: 33px;
+      margin: 0 auto;
+      padding: 0 13px;
+      border: 1px solid rgba(162, 126, 255, 0.16);
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(19, 17, 36, 0.92), rgba(8, 8, 18, 0.88));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 10px 28px rgba(0, 0, 0, 0.24);
+      color: var(--muted);
+      pointer-events: none;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        background 0.35s ease;
+    }
+
+    .singularity-orb {
+      position: relative;
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(175, 126, 255, 0.6);
+      border-radius: 50%;
+      background: #05030a;
+      box-shadow:
+        0 0 9px rgba(136, 75, 255, 0.55),
+        inset 0 0 0 2px rgba(0, 0, 0, 0.85);
+    }
+
+    .singularity-orb::after {
+      position: absolute;
+      inset: -3px;
+      border: 1px solid rgba(172, 121, 255, 0.2);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .singularity-hud-label {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .singularity-hud-track {
+      width: 62px;
+      height: 3px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .singularity-hud-track span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #7f55ff, #d7b4ff);
+      box-shadow: 0 0 8px rgba(153, 100, 255, 0.6);
+      transition: width 0.2s var(--ease);
+    }
+
+    .singularity-hud-count {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      color: var(--muted-bright);
+      font-size: 9px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .singularity-hud-total {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 500;
+    }
+
+    .singularity-mult {
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f0d8ff;
+      font-size: 9px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      text-shadow: 0 0 10px rgba(188, 118, 255, 0.6);
+    }
+
+    .singularity-hud.is-charged {
+      border-color: rgba(174, 118, 255, 0.35);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 0 26px rgba(125, 66, 255, 0.16);
+      animation: singularity-charge-pulse 1.7s ease-in-out infinite;
+    }
+
+    .singularity-hud.is-active {
+      border-color: rgba(214, 169, 255, 0.62);
+      background:
+        linear-gradient(180deg, rgba(38, 12, 60, 0.96), rgba(12, 3, 23, 0.94));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(152, 78, 255, 0.25);
+    }
+
+    .singularity-hud.is-active .singularity-hud-label {
+      color: #e7caff;
+      text-shadow: 0 0 12px rgba(192, 122, 255, 0.6);
+    }
+
+    .singularity-hud.is-active .singularity-orb {
+      border-color: #e5c5ff;
+      background: #000;
+      box-shadow:
+        0 0 13px rgba(192, 118, 255, 0.9),
+        0 0 26px rgba(117, 38, 255, 0.55);
+      animation: singularity-orb-pulse 1.2s ease-in-out infinite;
+    }
+
+    .singularity-hud.is-active .singularity-hud-track span {
+      width: 100%;
+      background: linear-gradient(90deg, #8e4bff, #fff1ff, #d26eff);
+      box-shadow: 0 0 14px rgba(220, 169, 255, 0.8);
     }
 
     .topbar {
@@ -253,10 +398,6 @@
       color: var(--danger);
       border-color: rgba(255, 123, 146, 0.25);
       background: rgba(255, 123, 146, 0.07);
-    }
-
-    .icon-btn.is-muted {
-      color: rgba(255, 255, 255, 0.35);
     }
 
     :focus-visible {
@@ -657,6 +798,7 @@
       position: absolute;
       top: 50%;
       left: 50%;
+      z-index: 2;
       width: 38%;
       height: 38%;
       transform: translate(-50%, -50%);
@@ -669,6 +811,7 @@
       position: absolute;
       bottom: 18%;
       left: 50%;
+      z-index: 3;
       width: 84%;
       transform: translateX(-50%);
       color: rgba(226, 255, 246, 0.5);
@@ -1405,6 +1548,345 @@
       pointer-events: none;
     }
 
+
+    /* --- Singularity event --------------------------------------------- */
+
+    body.is-singularity {
+      --mint: #c994ff;
+      --mint-deep: #9a55ff;
+      --violet: #b46bff;
+      --violet-bright: #e5c7ff;
+      --gold: #e8b5ff;
+      --danger: #ff8be6;
+    }
+
+    .singularity-chaos {
+      position: fixed;
+      inset: 0;
+      z-index: 44;
+      overflow: hidden;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 18% 18%, rgba(155, 18, 255, 0.32), transparent 65%),
+        radial-gradient(ellipse 60% 75% at 82% 78%, rgba(84, 0, 180, 0.38), transparent 65%),
+        radial-gradient(ellipse 45% 45% at 55% 48%, rgba(208, 93, 255, 0.15), transparent 70%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.028) 0,
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      box-shadow: inset 0 0 160px rgba(114, 0, 255, 0.5);
+      mix-blend-mode: screen;
+      animation: singularity-chaos-pulse 1.7s steps(2, end) infinite;
+    }
+
+    .singularity-chaos::before {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255, 0, 242, 0.1) 45%, transparent 76%),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 12%,
+          rgba(174, 79, 255, 0.09) 12.2%,
+          transparent 12.8%
+        );
+      content: "";
+      animation: singularity-chaos-sweep 2.4s linear infinite;
+    }
+
+    .singularity-chaos::after {
+      position: absolute;
+      top: 31%;
+      right: -10%;
+      left: -10%;
+      height: 7%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.11) 18%,
+        rgba(238, 155, 255, 0.22) 48%,
+        rgba(255, 255, 255, 0.05) 74%,
+        transparent
+      );
+      content: "";
+      mix-blend-mode: screen;
+      animation: singularity-chaos-slice 1.35s steps(1, end) infinite;
+    }
+
+    .singularity-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: #000;
+      opacity: 0;
+      pointer-events: auto;
+      transition: opacity 2.5s ease;
+    }
+
+    .singularity-curtain.is-active {
+      opacity: 1;
+    }
+
+    .singularity-message {
+      position: fixed;
+      inset: 0;
+      z-index: 85;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #fff;
+      font-size: clamp(26px, 5vw, 62px);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .singularity-message span {
+      display: block;
+      max-width: min(800px, 90vw);
+    }
+
+    .singularity-message.is-opening span {
+      text-shadow:
+        0 0 16px rgba(255, 255, 255, 0.55),
+        0 0 54px rgba(255, 255, 255, 0.22);
+      animation: singularity-message-flicker 1.15s steps(1, end) infinite;
+    }
+
+    .singularity-message.is-closing span {
+      padding: 12px 20px;
+      border: 1px solid rgba(196, 133, 255, 0.22);
+      border-radius: 12px;
+      background: rgba(8, 4, 17, 0.68);
+      box-shadow: 0 16px 46px rgba(0, 0, 0, 0.38);
+      color: #f1deff;
+      font-size: clamp(16px, 2.8vw, 26px);
+      letter-spacing: -0.025em;
+      text-shadow: 0 0 22px rgba(175, 105, 255, 0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      animation: singularity-message-close 2.8s ease forwards;
+    }
+
+    .singularity-flash {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .singularity-flash.is-flashing {
+      animation: singularity-white-flash 0.82s ease-out both;
+    }
+
+    /* Text and box instability while the singularity is open. */
+    body.is-singularity .app {
+      text-shadow:
+        1px 0 rgba(255, 0, 224, 0.34),
+        -1px 0 rgba(0, 210, 255, 0.28);
+    }
+
+    body.is-singularity .brand-title,
+    body.is-singularity .brand-sub,
+    body.is-singularity .autosave,
+    body.is-singularity .balance,
+    body.is-singularity .eyebrow,
+    body.is-singularity .rank-pill,
+    body.is-singularity .rate-pill,
+    body.is-singularity .combo-meta,
+    body.is-singularity .hint,
+    body.is-singularity .shop-head h2,
+    body.is-singularity .shop-sub,
+    body.is-singularity .shop-badge,
+    body.is-singularity .u-name,
+    body.is-singularity .u-desc,
+    body.is-singularity .u-current,
+    body.is-singularity .u-level,
+    body.is-singularity .u-cost,
+    body.is-singularity .u-cta,
+    body.is-singularity .rank-name,
+    body.is-singularity .rank-next,
+    body.is-singularity .rank-pct,
+    body.is-singularity .stat-label,
+    body.is-singularity .stat strong,
+    body.is-singularity .core-label,
+    body.is-singularity .singularity-hud-label,
+    body.is-singularity .singularity-hud-count,
+    body.is-singularity .singularity-hud-total,
+    body.is-singularity .singularity-mult {
+      animation: singularity-text-glitch 0.38s steps(2, end) infinite;
+    }
+
+    body.is-singularity .upgrade:nth-child(2n) .u-name,
+    body.is-singularity .upgrade:nth-child(2n) .u-cost,
+    body.is-singularity .stat:nth-child(2) strong {
+      animation-delay: -0.19s;
+    }
+
+    body.is-singularity .upgrade:nth-child(3n) .u-name,
+    body.is-singularity .upgrade:nth-child(3n) .u-desc {
+      animation-delay: -0.29s;
+    }
+
+    body.is-singularity .play-panel,
+    body.is-singularity .side-panel {
+      border-color: rgba(190, 132, 255, 0.2);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 32px 90px rgba(40, 0, 80, 0.5);
+    }
+
+    body.is-singularity .upgrade {
+      animation: singularity-box-flicker 2.15s steps(1, end) infinite;
+    }
+
+    body.is-singularity .upgrade:nth-child(2n) {
+      animation-delay: -0.72s;
+    }
+
+    body.is-singularity .float-text {
+      color: #e8c9ff;
+      text-shadow: 0 0 22px rgba(179, 100, 255, 0.8);
+    }
+
+    body.is-singularity .float-text.is-crit {
+      color: #fff;
+      text-shadow: 0 0 25px rgba(207, 154, 255, 0.9);
+    }
+
+    body.is-singularity .click-ripple {
+      border-color: rgba(205, 151, 255, 0.6);
+    }
+
+    /* The core becomes an event horizon. */
+    body.is-singularity .core-surface {
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          #000 0%,
+          #000 31%,
+          #07000d 37%,
+          rgba(149, 72, 255, 0.88) 40%,
+          rgba(250, 236, 255, 0.94) 42%,
+          rgba(158, 82, 255, 0.74) 45%,
+          rgba(53, 0, 98, 0.64) 54%,
+          #020005 74%
+        );
+      box-shadow:
+        inset 0 0 55px rgba(0, 0, 0, 0.98),
+        inset 0 0 0 1px rgba(236, 212, 255, 0.18),
+        0 0 45px rgba(168, 89, 255, 0.48),
+        0 0 165px rgba(94, 21, 255, 0.35);
+      filter: brightness(1);
+      animation: singularity-black-hole-breathe 2.5s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-surface::before {
+      background:
+        radial-gradient(
+          circle,
+          transparent 31%,
+          rgba(199, 138, 255, 0.2) 40%,
+          rgba(108, 31, 200, 0.14) 49%,
+          transparent 60%
+        );
+      mix-blend-mode: screen;
+      animation: singularity-black-hole-breathe 2.8s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-surface::after {
+      background:
+        radial-gradient(circle at 37% 32%, rgba(255, 255, 255, 0.12), transparent 26%);
+      filter: blur(10px);
+      mix-blend-mode: screen;
+      animation: singularity-black-hole-breathe 2.3s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-star {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25) rotate(140deg);
+    }
+
+    body.is-singularity .core::before {
+      background: conic-gradient(
+        from 10deg,
+        transparent 0deg,
+        rgba(213, 169, 255, 0.5) 42deg,
+        transparent 92deg,
+        transparent 220deg,
+        rgba(133, 55, 255, 0.45) 290deg,
+        transparent 340deg
+      );
+      animation-duration: 3.4s;
+    }
+
+    body.is-singularity .core::after {
+      opacity: 1;
+      animation: singularity-ring-spin 4.6s linear infinite;
+    }
+
+    body.is-singularity .core-halo {
+      background: radial-gradient(
+        circle,
+        rgba(184, 103, 255, 0.33) 0%,
+        rgba(91, 17, 170, 0.2) 44%,
+        transparent 72%
+      );
+      animation-duration: 2.4s;
+    }
+
+    body.is-singularity .core-label {
+      color: #f6e8ff;
+      font-size: 8px;
+      letter-spacing: 0.14em;
+      text-shadow: 0 0 16px rgba(188, 112, 255, 0.75);
+    }
+
+    body.is-singularity .orbit {
+      border-color: rgba(181, 117, 255, 0.27);
+    }
+
+    body.is-singularity .orbit--dashed::before,
+    body.is-singularity .orbit--wide::after,
+    body.is-singularity .orbit--narrow::before {
+      background: #d3a2ff;
+      box-shadow: 0 0 14px rgba(186, 111, 255, 0.9);
+    }
+
+    body.is-singularity .core:hover .core-surface {
+      filter: brightness(1.06);
+    }
+
+    .core::after {
+      position: absolute;
+      inset: -7%;
+      z-index: -1;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 40deg,
+        transparent 0deg,
+        rgba(205, 151, 255, 0.5) 48deg,
+        transparent 104deg,
+        transparent 236deg,
+        rgba(127, 51, 255, 0.42) 292deg,
+        transparent 344deg
+      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      content: "";
+      pointer-events: none;
+    }
+
     .toast {
       position: fixed;
       bottom: 26px;
@@ -1545,6 +2027,110 @@
       border-color: rgba(255, 123, 146, 0.4);
       background: rgba(255, 123, 146, 0.16);
       color: #ffd5dc;
+    }
+
+
+    @keyframes singularity-charge-pulse {
+      0%, 100% { border-color: rgba(174, 118, 255, 0.25); }
+      50% { border-color: rgba(198, 147, 255, 0.5); }
+    }
+
+    @keyframes singularity-orb-pulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(192, 118, 255, 0.7); }
+      50% { box-shadow: 0 0 20px rgba(224, 183, 255, 0.95), 0 0 38px rgba(126, 45, 255, 0.6); }
+    }
+
+    @keyframes singularity-chaos-pulse {
+      0%, 100% { opacity: 0.78; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes singularity-chaos-sweep {
+      0% { transform: translateX(-14%); }
+      50% { transform: translateX(8%); }
+      100% { transform: translateX(-14%); }
+    }
+
+    @keyframes singularity-chaos-slice {
+      0% { top: 8%; opacity: 0; }
+      10% { opacity: 0.9; }
+      26% { top: 21%; opacity: 0.35; }
+      42% { top: 63%; opacity: 0.75; }
+      58% { top: 38%; opacity: 0.1; }
+      76% { top: 82%; opacity: 0.8; }
+      100% { top: 92%; opacity: 0; }
+    }
+
+    @keyframes singularity-message-flicker {
+      0%, 12% { opacity: 0; }
+      13%, 32% { opacity: 1; }
+      33%, 42% { opacity: 0.08; }
+      43%, 64% { opacity: 1; }
+      65%, 72% { opacity: 0.1; }
+      73%, 92% { opacity: 1; }
+      93%, 100% { opacity: 0.2; }
+    }
+
+    @keyframes singularity-message-close {
+      0% { opacity: 0; transform: translateY(8px); }
+      12%, 75% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-5px); }
+    }
+
+    @keyframes singularity-white-flash {
+      0% { opacity: 0; }
+      7% { opacity: 1; }
+      35% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes singularity-text-glitch {
+      0%, 100% {
+        translate: 0 0;
+        text-shadow: 1px 0 rgba(255, 0, 224, 0.55), -1px 0 rgba(0, 216, 255, 0.45);
+      }
+      24% {
+        translate: -1px 1px;
+        text-shadow: -2px 0 rgba(255, 0, 224, 0.62), 2px 0 rgba(0, 216, 255, 0.5);
+      }
+      48% {
+        translate: 1px 0;
+        text-shadow: 2px 0 rgba(255, 0, 224, 0.5), -2px 0 rgba(0, 216, 255, 0.45);
+      }
+      74% {
+        translate: -1px -1px;
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.45), -2px 0 rgba(159, 67, 255, 0.5);
+      }
+    }
+
+    @keyframes singularity-box-flicker {
+      0%, 100% {
+        border-color: rgba(255, 255, 255, 0.065);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      45% {
+        border-color: rgba(192, 138, 255, 0.32);
+        box-shadow: 0 0 18px rgba(151, 69, 255, 0.1);
+      }
+      51% {
+        border-color: rgba(255, 255, 255, 0.03);
+      }
+      76% {
+        border-color: rgba(174, 106, 255, 0.25);
+      }
+    }
+
+    @keyframes singularity-black-hole-breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.018); }
+    }
+
+    @keyframes singularity-black-hole-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes singularity-ring-spin {
+      to { transform: rotate(360deg); }
     }
 
     @keyframes live-pulse {
@@ -1716,7 +2302,7 @@
 
     @media (max-width: 620px) {
       .app {
-        padding: 0 12px 18px;
+        padding: 8px 12px 18px;
       }
 
       .topbar {
@@ -1759,6 +2345,21 @@
       .icon-btn {
         width: 37px;
         height: 37px;
+      }
+
+      .singularity-hud {
+        gap: 7px;
+        height: 31px;
+        padding-inline: 11px;
+      }
+
+      .singularity-hud-track {
+        width: 44px;
+      }
+
+      .singularity-mult {
+        padding-left: 6px;
+        font-size: 8px;
       }
 
       .panel {
@@ -1888,6 +2489,10 @@
         display: none;
       }
 
+      .singularity-hud-label {
+        display: none;
+      }
+
       .u-desc {
         white-space: normal;
       }
@@ -1949,6 +2554,20 @@
       .core-surface::after {
         animation: none !important;
       }
+
+      .singularity-message.is-opening span {
+        opacity: 1;
+        animation: none !important;
+      }
+
+      .singularity-message.is-closing span {
+        opacity: 1;
+        animation: none !important;
+      }
+
+      .singularity-chaos {
+        opacity: 0.92;
+      }
     }
   </style>
 </head>
@@ -1958,6 +2577,14 @@
   <div class="aurora aurora--violet" aria-hidden="true"></div>
 
   <div class="app">
+    <div class="singularity-hud" id="singularityHud" aria-label="Singularity charge">
+      <span class="singularity-orb" aria-hidden="true"></span>
+      <span class="singularity-hud-label">Singularity</span>
+      <span class="singularity-hud-track" aria-hidden="true"><span id="singularityFill"></span></span>
+      <span class="singularity-hud-count"><span id="singularityCount">000</span><span class="singularity-hud-total">/ 500</span></span>
+      <span class="singularity-mult" id="singularityMult" hidden>×10 <span id="singularityTimer">30.0s</span></span>
+    </div>
+
     <header class="topbar">
       <div class="brand" aria-label="Orbit Clicker">
         <div class="brand-mark" aria-hidden="true">
@@ -1985,17 +2612,6 @@
           <span class="status-dot" aria-hidden="true"></span>
           <span id="autosaveLabel">AUTOSAVE</span>
         </div>
-        <button class="icon-btn" id="soundBtn" type="button" aria-label="Mute sound" title="Mute sound">
-          <svg id="soundOnIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/>
-            <path d="M15.2 8.6a5 5 0 0 1 0 6.8"/>
-            <path d="M18.2 5.7a9.3 9.3 0 0 1 0 12.6"/>
-          </svg>
-          <svg id="soundOffIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
-            <path d="M11 5 6.5 9H3v6h3.5L11 19V5Z"/>
-            <path d="m16 9 5 6M21 9l-5 6"/>
-          </svg>
-        </button>
         <button class="icon-btn icon-btn--danger" id="resetBtn" type="button" aria-label="Reset progress" title="Reset progress">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M3.5 12a8.5 8.5 0 1 0 2.4-5.9"/>
@@ -2159,6 +2775,12 @@
     <div class="solar-embers" id="solarEmbers"></div>
   </div>
 
+
+  <div class="singularity-chaos" id="singularityChaos" hidden aria-hidden="true"></div>
+  <div class="singularity-curtain" id="singularityCurtain" hidden aria-hidden="true"></div>
+  <div class="singularity-message" id="singularityMessage" role="status" aria-live="assertive" hidden><span id="singularityMessageText"></span></div>
+  <div class="singularity-flash" id="singularityFlash" hidden aria-hidden="true"></div>
+
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <dialog id="resetDialog" aria-labelledby="resetTitle">
@@ -2170,7 +2792,7 @@
         </svg>
       </div>
       <h2 id="resetTitle">Restart the universe?</h2>
-      <p>This clears your stardust, upgrades, ranks, and lifetime stats from this browser. There is no undo.</p>
+      <p>This clears your stardust, upgrades, ranks, singularity charge, and lifetime stats from this browser. There is no undo.</p>
       <div class="dialog-actions">
         <button class="btn" value="cancel" type="submit">Keep playing</button>
         <button class="btn btn--danger" id="confirmReset" value="confirm" type="button">Reset everything</button>
@@ -2195,6 +2817,9 @@
     const SOLAR_SURGE_CHANCE_PER_LEVEL = 0.005;
     const SOLAR_SURGE_MULTIPLIER = 3.5;
     const SOLAR_SURGE_DURATION = 10000;
+    const SINGULARITY_CLICKS_REQUIRED = 500;
+    const SINGULARITY_DURATION = 30000;
+    const SINGULARITY_MULTIPLIER = 10;
 
     const RANKS = [
       { at: 0, name: "Dust Mote" },
@@ -2403,6 +3028,10 @@
     let solarSurgeActive = false;
     let solarSurgeEndsAt = 0;
     let lastSurgeEmberAt = 0;
+    let singularityPhase = "idle";
+    let singularityChaosEndsAt = 0;
+    let singularityClickLocked = false;
+    let singularityTimers = [];
 
     const cards = new Map();
 
@@ -2424,7 +3053,7 @@
         totalClicks: 0,
         bestHit: 0,
         levels: defaultLevels(),
-        muted: false,
+        singularityClicks: 0,
         lastSeen: Date.now()
       };
     }
@@ -2475,7 +3104,8 @@
 
     function clickValue() {
       const surgeMultiplier = solarSurgeActive ? SOLAR_SURGE_MULTIPLIER : 1;
-      return (1 + state.levels.capacitor) * comboMultiplier() * surgeMultiplier;
+      const singularityMultiplier = singularityPhase === "chaos" ? SINGULARITY_MULTIPLIER : 1;
+      return (1 + state.levels.capacitor) * comboMultiplier() * surgeMultiplier * singularityMultiplier;
     }
 
     function rankIndexForTotal(total) {
@@ -2522,7 +3152,14 @@
         });
       }
 
-      fresh.muted = Boolean(raw.muted);
+      const savedSingularityClicks = Number(raw.singularityClicks);
+      if (Number.isFinite(savedSingularityClicks) && savedSingularityClicks >= 0) {
+        fresh.singularityClicks = Math.min(
+          Math.floor(savedSingularityClicks),
+          SINGULARITY_CLICKS_REQUIRED - 1
+        );
+      }
+
       return fresh;
     }
 
@@ -2607,6 +3244,7 @@
     --------------------------------------------------------------------- */
 
     const ui = {
+      app: document.querySelector(".app"),
       balance: $("balance"),
       rateValue: $("rateValue"),
       clickValue: $("clickValue"),
@@ -2618,6 +3256,16 @@
       solarOverlay: $("solarOverlay"),
       solarEmbers: $("solarEmbers"),
       solarLicks: $("solarLicks"),
+      singularityHud: $("singularityHud"),
+      singularityCount: $("singularityCount"),
+      singularityFill: $("singularityFill"),
+      singularityMult: $("singularityMult"),
+      singularityTimer: $("singularityTimer"),
+      singularityChaos: $("singularityChaos"),
+      singularityCurtain: $("singularityCurtain"),
+      singularityMessage: $("singularityMessage"),
+      singularityMessageText: $("singularityMessageText"),
+      singularityFlash: $("singularityFlash"),
       moduleCount: $("moduleCount"),
       comboValue: $("comboValue"),
       comboFill: $("comboFill"),
@@ -2635,9 +3283,6 @@
       statClicks: $("statClicks"),
       statLifetime: $("statLifetime"),
       statBest: $("statBest"),
-      soundBtn: $("soundBtn"),
-      soundOnIcon: $("soundOnIcon"),
-      soundOffIcon: $("soundOffIcon"),
       toast: $("toast"),
       resetDialog: $("resetDialog")
     };
@@ -2753,20 +3398,45 @@
       ui.statBest.textContent = formatHit(state.bestHit);
     }
 
+    function updateSingularityHud() {
+      const showingEvent = singularityPhase === "opening" || singularityPhase === "chaos";
+      const count = showingEvent ? SINGULARITY_CLICKS_REQUIRED : state.singularityClicks;
+      const progress = clamp(count / SINGULARITY_CLICKS_REQUIRED, 0, 1);
+
+      ui.singularityCount.textContent = String(Math.floor(count)).padStart(3, "0");
+      ui.singularityFill.style.width = `${progress * 100}%`;
+      ui.singularityHud.classList.toggle(
+        "is-charged",
+        singularityPhase === "idle" && state.singularityClicks >= 450
+      );
+      ui.singularityHud.classList.toggle(
+        "is-active",
+        singularityPhase === "opening" || singularityPhase === "chaos"
+      );
+      ui.singularityMult.hidden = singularityPhase !== "chaos";
+
+      if (singularityPhase === "chaos") {
+        const remaining = Math.max(0, singularityChaosEndsAt - performance.now());
+        ui.singularityTimer.textContent = `${(remaining / 1000).toFixed(1)}s`;
+        ui.singularityHud.setAttribute(
+          "aria-label",
+          `Singularity active. Clicks are multiplied by ${SINGULARITY_MULTIPLIER}. ${(remaining / 1000).toFixed(1)} seconds remaining.`
+        );
+      } else {
+        ui.singularityHud.setAttribute(
+          "aria-label",
+          `Singularity charge: ${Math.floor(count)} of ${SINGULARITY_CLICKS_REQUIRED}.`
+        );
+      }
+    }
+
     function updateUI(forceBalance = false) {
       updateBalance(forceBalance);
       updateCombo();
       refreshAffordability();
       updateRank();
       updateStats();
-    }
-
-    function updateSoundButton() {
-      ui.soundBtn.classList.toggle("is-muted", state.muted);
-      ui.soundOnIcon.toggleAttribute("hidden", state.muted);
-      ui.soundOffIcon.toggleAttribute("hidden", !state.muted);
-      ui.soundBtn.setAttribute("aria-label", state.muted ? "Unmute sound" : "Mute sound");
-      ui.soundBtn.title = state.muted ? "Unmute sound" : "Mute sound";
+      updateSingularityHud();
     }
 
     /* ---------------------------------------------------------------------
@@ -2815,9 +3485,14 @@
         ui.fxLayer.firstElementChild.remove();
       }
 
-      const colors = isCrit
-        ? ["#ffd27d", "#ffe7ae", "#7af7c8", "#ffb86b"]
-        : ["#7af7c8", "#a7ffe4", "#9282ff", "#c4bfff"];
+      const singularityBurst = singularityPhase === "chaos";
+      const colors = singularityBurst
+        ? (isCrit
+          ? ["#ffffff", "#efd9ff", "#c995ff", "#9e5bff"]
+          : ["#e8ccff", "#c995ff", "#a966ff", "#ffffff"])
+        : (isCrit
+          ? ["#ffd27d", "#ffe7ae", "#7af7c8", "#ffb86b"]
+          : ["#7af7c8", "#a7ffe4", "#9282ff", "#c4bfff"]);
       const count = isCrit ? 18 : 10;
       const fragment = document.createDocumentFragment();
 
@@ -2871,99 +3546,46 @@
     }
 
     /* ---------------------------------------------------------------------
-       Audio
-    --------------------------------------------------------------------- */
-
-    const sound = (() => {
-      let context = null;
-
-      function ensureContext() {
-        if (state.muted) return null;
-        try {
-          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContextClass) return null;
-          if (!context) context = new AudioContextClass();
-          if (context.state === "suspended") context.resume();
-          return context;
-        } catch (error) {
-          return null;
-        }
-      }
-
-      function tone(frequency, duration, type = "sine", volume = 0.02, delay = 0) {
-        const ctx = ensureContext();
-        if (!ctx) return;
-        try {
-          const start = ctx.currentTime + delay;
-          const oscillator = ctx.createOscillator();
-          const gain = ctx.createGain();
-          oscillator.type = type;
-          oscillator.frequency.setValueAtTime(frequency, start);
-          oscillator.frequency.exponentialRampToValueAtTime(frequency * 0.86, start + duration);
-          gain.gain.setValueAtTime(0.0001, start);
-          gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
-          gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-          oscillator.connect(gain);
-          gain.connect(ctx.destination);
-          oscillator.start(start);
-          oscillator.stop(start + duration + 0.02);
-        } catch (error) {
-          /* Audio is a nice-to-have, never a blocker. */
-        }
-      }
-
-      return {
-        click(isCrit) {
-          if (state.muted) return;
-          const base = 340 + Math.min(combo, MAX_COMBO) * 9;
-          if (isCrit) {
-            tone(base * 1.8, 0.1, "sine", 0.022);
-            tone(base * 2.35, 0.17, "sine", 0.018, 0.055);
-            tone(base * 3.05, 0.2, "triangle", 0.01, 0.11);
-          } else {
-            tone(base, 0.055, "triangle", 0.015);
-          }
-        },
-        buy() {
-          if (state.muted) return;
-          tone(523.25, 0.11, "sine", 0.022);
-          tone(783.99, 0.15, "sine", 0.018, 0.085);
-        },
-        rank() {
-          if (state.muted) return;
-          [523.25, 659.25, 783.99, 1046.5].forEach((frequency, index) => {
-            tone(frequency, 0.28, "sine", 0.02, index * 0.08);
-          });
-        },
-        surge(extended) {
-          if (state.muted) return;
-          const notes = extended
-            ? [392, 523.25, 659.25]
-            : [196, 261.63, 392, 523.25, 659.25, 783.99];
-          notes.forEach((frequency, index) => {
-            tone(frequency, extended ? 0.24 : 0.34, "sine", 0.018, index * 0.055);
-          });
-        },
-        toggle() {
-          tone(660, 0.07, "sine", 0.018);
-          tone(880, 0.09, "sine", 0.014, 0.06);
-        },
-        denied() {
-          if (state.muted) return;
-          tone(190, 0.09, "triangle", 0.014);
-        }
-      };
-    })();
-
-    /* ---------------------------------------------------------------------
        Game actions
     --------------------------------------------------------------------- */
 
 
+    function setCoreAriaLabel(label) {
+      if (ui.core.getAttribute("aria-label") !== label) {
+        ui.core.setAttribute("aria-label", label);
+      }
+    }
+
+    function refreshCoreLabelAndAria() {
+      if (singularityPhase === "chaos") {
+        const remaining = Math.max(0, singularityChaosEndsAt - performance.now());
+        ui.coreLabel.textContent = `SINGULARITY · ${(remaining / 1000).toFixed(1)}s`;
+        ui.coreLabel.classList.add("is-surge");
+        setCoreAriaLabel(
+          `Collect stardust from the singularity. Click power is multiplied by ${SINGULARITY_MULTIPLIER}.`
+        );
+        return;
+      }
+
+      if (solarSurgeActive) {
+        const remaining = Math.max(0, solarSurgeEndsAt - performance.now());
+        ui.coreLabel.textContent = `SOLAR SURGE · ${(remaining / 1000).toFixed(1)}s`;
+        ui.coreLabel.classList.add("is-surge");
+        setCoreAriaLabel(
+          `Collect stardust from the core. Solar surge active: ${SOLAR_SURGE_MULTIPLIER} times click power.`
+        );
+        return;
+      }
+
+      ui.coreLabel.textContent = "Tap to collect";
+      ui.coreLabel.classList.remove("is-surge");
+      setCoreAriaLabel("Collect stardust from the core");
+    }
+
     function updateSurgeCountdown(remainingMs) {
       const label = `${Math.max(0, remainingMs / 1000).toFixed(1)}s`;
       ui.surgeTimer.textContent = ` · ${label}`;
-      ui.coreLabel.textContent = `SOLAR SURGE · ${label}`;
+      refreshCoreLabelAndAria();
     }
 
     function setSurgeVisualState(active) {
@@ -2973,20 +3595,14 @@
       ui.surgeIcon.toggleAttribute("hidden", !active);
       ui.clickStarIcon.toggleAttribute("hidden", active);
       ui.surgeTimer.toggleAttribute("hidden", !active);
-      ui.coreLabel.classList.toggle("is-surge", active);
 
-      if (active) {
-        ui.core.setAttribute(
-          "aria-label",
-          `Collect stardust from the core. Solar surge active: ${SOLAR_SURGE_MULTIPLIER} times click power.`
-        );
-      } else {
+      if (!active) {
         ui.surgeTimer.textContent = "";
-        ui.coreLabel.textContent = "Tap to collect";
         ui.solarEmbers.replaceChildren();
         ui.solarLicks.replaceChildren();
-        ui.core.setAttribute("aria-label", "Collect stardust from the core");
       }
+
+      refreshCoreLabelAndAria();
     }
 
     function startSolarSurge() {
@@ -3005,7 +3621,6 @@
         );
       }
 
-      sound.surge(extended);
 
       if (!prefersReducedMotion()) {
         ui.clickPill.animate(
@@ -3115,13 +3730,160 @@
       spawnSurgeEmbers();
     }
 
+
+    function clearSingularityTimers() {
+      singularityTimers.forEach((timer) => clearTimeout(timer));
+      singularityTimers = [];
+    }
+
+    function scheduleSingularity(callback, delay) {
+      const timer = setTimeout(callback, delay);
+      singularityTimers.push(timer);
+      return timer;
+    }
+
+    function triggerSingularityFlash() {
+      ui.singularityFlash.hidden = false;
+      ui.singularityFlash.classList.remove("is-flashing");
+      void ui.singularityFlash.offsetWidth;
+      ui.singularityFlash.classList.add("is-flashing");
+      scheduleSingularity(() => {
+        ui.singularityFlash.hidden = true;
+        ui.singularityFlash.classList.remove("is-flashing");
+      }, 860);
+    }
+
+    function showSingularityMessage(text, stateClass) {
+      ui.singularityMessageText.textContent = text;
+      ui.singularityMessage.className = `singularity-message ${stateClass}`;
+      ui.singularityMessage.hidden = false;
+    }
+
+    function startSingularity() {
+      if (singularityPhase !== "idle") return;
+      clearSingularityTimers();
+      singularityPhase = "opening";
+      singularityClickLocked = true;
+      ui.app.inert = true;
+      state.singularityClicks = 0;
+      ui.singularityFlash.hidden = true;
+      ui.singularityFlash.classList.remove("is-flashing");
+      ui.singularityChaos.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityCurtain.hidden = false;
+      ui.singularityCurtain.classList.remove("is-active");
+      void ui.singularityCurtain.offsetWidth;
+      ui.singularityCurtain.classList.add("is-active");
+      updateSingularityHud();
+      updateUI(true);
+      scheduleSave();
+
+      scheduleSingularity(() => {
+        showSingularityMessage("the singularity has opened.", "is-opening");
+      }, 1250);
+
+      scheduleSingularity(() => {
+        triggerSingularityFlash();
+      }, 3050);
+
+      scheduleSingularity(beginSingularityChaos, 3350);
+    }
+
+    function beginSingularityChaos() {
+      if (singularityPhase !== "opening") return;
+      singularityPhase = "chaos";
+      singularityClickLocked = false;
+      ui.app.inert = false;
+      singularityChaosEndsAt = performance.now() + SINGULARITY_DURATION;
+      document.body.classList.add("is-singularity");
+      ui.singularityCurtain.classList.remove("is-active");
+      ui.singularityCurtain.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityChaos.hidden = false;
+      updateSingularityHud();
+      refreshCoreLabelAndAria();
+      updateUI(true);
+    }
+
+    function beginSingularityClose() {
+      if (singularityPhase !== "chaos") return;
+      singularityPhase = "closing";
+      singularityChaosEndsAt = 0;
+      document.body.classList.remove("is-singularity");
+      ui.singularityChaos.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      state.singularityClicks = 0;
+      updateSingularityHud();
+      refreshCoreLabelAndAria();
+      updateUI(true);
+      saveGame();
+      triggerSingularityFlash();
+
+      scheduleSingularity(() => {
+        showSingularityMessage("the singularity has closed.", "is-closing");
+      }, 240);
+
+      scheduleSingularity(() => {
+        ui.singularityMessage.hidden = true;
+        ui.singularityMessage.className = "singularity-message";
+        singularityPhase = "idle";
+        updateSingularityHud();
+        refreshCoreLabelAndAria();
+      }, 3150);
+    }
+
+    function abortSingularity() {
+      clearSingularityTimers();
+      singularityPhase = "idle";
+      singularityChaosEndsAt = 0;
+      singularityClickLocked = false;
+      ui.app.inert = false;
+      document.body.classList.remove("is-singularity");
+      ui.singularityChaos.hidden = true;
+      ui.singularityCurtain.classList.remove("is-active");
+      ui.singularityCurtain.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityFlash.hidden = true;
+      ui.singularityFlash.classList.remove("is-flashing");
+      refreshCoreLabelAndAria();
+      updateSingularityHud();
+    }
+
+    function registerSingularityClick() {
+      if (singularityPhase !== "idle") return;
+      const next = state.singularityClicks + 1;
+
+      if (next >= SINGULARITY_CLICKS_REQUIRED) {
+        state.singularityClicks = 0;
+        startSingularity();
+        return;
+      }
+
+      state.singularityClicks = next;
+      updateSingularityHud();
+    }
+
+    function tickSingularity(now) {
+      if (singularityPhase !== "chaos") return;
+      const remaining = singularityChaosEndsAt - now;
+      if (remaining <= 0) {
+        beginSingularityClose();
+        return;
+      }
+      ui.singularityTimer.textContent = `${(remaining / 1000).toFixed(1)}s`;
+      refreshCoreLabelAndAria();
+    }
+
     function checkRank() {
       const nextIndex = rankIndexForTotal(state.totalEarned);
       if (nextIndex > lastRankIndex) {
         lastRankIndex = nextIndex;
         const rank = RANKS[nextIndex];
         showToast(`Rank up · ${rank.name}`, "gold", 3200);
-        sound.rank();
         scheduleSave();
       }
     }
@@ -3134,6 +3896,8 @@
     }
 
     function collectStardust(x, y) {
+      if (singularityClickLocked) return;
+
       const now = performance.now();
       if (now - lastClickAt <= COMBO_WINDOW) {
         combo = Math.min(MAX_COMBO, combo + 1);
@@ -3162,7 +3926,7 @@
       bumpBalance();
       animateCoreHit(isCrit);
       spawnBurst(x, y, isCrit);
-      sound.click(isCrit);
+      registerSingularityClick();
       scheduleSave();
     }
 
@@ -3179,7 +3943,6 @@
       if (state.energy + 1e-9 < cost) {
         const missing = cost - state.energy;
         showToast(`Need ${formatCost(missing)} more stardust.`, "warning", 2000);
-        sound.denied();
         const card = cards.get(def.id).card;
         card.classList.add("is-denied");
         setTimeout(() => card.classList.remove("is-denied"), 450);
@@ -3191,7 +3954,6 @@
       const newLevel = state.levels[def.id];
       const maxed = newLevel >= def.max;
 
-      sound.buy();
       saveGame();
       updateShop();
       updateUI(true);
@@ -3219,18 +3981,17 @@
 
     function resetGame() {
       endSolarSurge();
-      const keepMuted = state.muted;
+      abortSingularity();
       state = createDefaultState();
-      state.muted = keepMuted;
       combo = 0;
       lastClickAt = -Infinity;
       lastRankIndex = 0;
       clearTimeout(comboTimer);
       lastBalanceValue = null;
-      updateSoundButton();
       saveGame();
       updateShop();
       updateUI(true);
+      refreshCoreLabelAndAria();
       showToast("A fresh universe awaits.", "default", 2600);
       updateStorageStatus(
         storageAvailable ? "AUTOSAVE" : "SESSION ONLY",
@@ -3267,13 +4028,6 @@
       event.preventDefault();
       const center = coreCenter();
       collectStardust(center.x, center.y);
-    });
-
-    ui.soundBtn.addEventListener("click", () => {
-      state.muted = !state.muted;
-      updateSoundButton();
-      if (!state.muted) sound.toggle();
-      scheduleSave();
     });
 
     $("resetBtn").addEventListener("click", () => {
@@ -3326,6 +4080,7 @@
       if (document.hidden) return;
 
       tickSolarSurge(now);
+      tickSingularity(now);
 
       const rate = autoRate();
       if (rate > 0) {
@@ -3437,7 +4192,6 @@
     function boot() {
       const { offlineEarned, offlineSeconds } = loadGame();
       renderShop();
-      updateSoundButton();
       updateUI(true);
       initStarfield();
       if (document.hidden) hiddenAt = Date.now();
