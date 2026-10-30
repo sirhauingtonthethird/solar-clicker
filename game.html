@@ -1,0 +1,4645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#05060f">
+  <meta name="description" id="metaDescription" content="Orbit Clicker is a free, silent browser clicker game. Tap the core, build stardust, survive rare solar surges, and open the singularity.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230b0e1b'/%3E%3Ccircle cx='32' cy='32' r='13' fill='%237af7c8'/%3E%3Cellipse cx='32' cy='32' rx='25' ry='10' transform='rotate(-25 32 32)' fill='none' stroke='%239282ff' stroke-width='2'/%3E%3Ccircle cx='51' cy='21' r='3' fill='%23ffd27d'/%3E%3C/svg%3E">
+  <title>Orbit Clicker</title>
+  <style>
+    :root {
+      --bg: #05060f;
+      --panel: rgba(14, 17, 31, 0.82);
+      --panel-raised: rgba(22, 26, 45, 0.78);
+      --stroke: rgba(255, 255, 255, 0.075);
+      --stroke-strong: rgba(255, 255, 255, 0.13);
+      --text: #f4f7ff;
+      --muted: #8b92ab;
+      --muted-bright: #aab1c8;
+      --mint: #7af7c8;
+      --mint-deep: #2ed6a5;
+      --violet: #9282ff;
+      --violet-bright: #b7adff;
+      --gold: #ffd27d;
+      --danger: #ff7b92;
+      --radius-xl: 28px;
+      --radius-lg: 18px;
+      --ease: cubic-bezier(0.22, 0.8, 0.24, 1);
+      --font: "Avenir Next", "Segoe UI", ui-sans-serif, system-ui, -apple-system, sans-serif;
+      --mono: "SF Mono", "Cascadia Code", "Roboto Mono", ui-monospace, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    html {
+      color-scheme: dark;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(1100px 720px at 12% -8%, rgba(89, 60, 166, 0.24), transparent 62%),
+        radial-gradient(900px 680px at 94% 102%, rgba(18, 127, 113, 0.16), transparent 65%),
+        var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    button {
+      font: inherit;
+    }
+
+    button,
+    dialog {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    ::selection {
+      color: #07110f;
+      background: var(--mint);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: 0.9;
+    }
+
+    .aurora {
+      position: fixed;
+      z-index: -1;
+      width: 46vw;
+      min-width: 320px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      filter: blur(110px);
+      pointer-events: none;
+      opacity: 0.16;
+    }
+
+    .aurora--mint {
+      left: -12vw;
+      top: 22vh;
+      background: #2ce3b5;
+    }
+
+    .aurora--violet {
+      right: -15vw;
+      bottom: -4vh;
+      background: #6b55e9;
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 8px 24px 30px;
+    }
+
+
+    .singularity-hud {
+      position: sticky;
+      top: 8px;
+      z-index: 46;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      width: fit-content;
+      max-width: calc(100vw - 32px);
+      height: 33px;
+      margin: 0 auto;
+      padding: 0 13px;
+      border: 1px solid rgba(162, 126, 255, 0.16);
+      border-radius: 999px;
+      background:
+        linear-gradient(180deg, rgba(19, 17, 36, 0.92), rgba(8, 8, 18, 0.88));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.06),
+        0 10px 28px rgba(0, 0, 0, 0.24);
+      color: var(--muted);
+      pointer-events: none;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        background 0.35s ease;
+    }
+
+    .singularity-orb {
+      position: relative;
+      flex: 0 0 auto;
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(175, 126, 255, 0.6);
+      border-radius: 50%;
+      background: #05030a;
+      box-shadow:
+        0 0 9px rgba(136, 75, 255, 0.55),
+        inset 0 0 0 2px rgba(0, 0, 0, 0.85);
+    }
+
+    .singularity-orb::after {
+      position: absolute;
+      inset: -3px;
+      border: 1px solid rgba(172, 121, 255, 0.2);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .singularity-hud-label {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .singularity-hud-track {
+      width: 62px;
+      height: 3px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.075);
+    }
+
+    .singularity-hud-track span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #7f55ff, #d7b4ff);
+      box-shadow: 0 0 8px rgba(153, 100, 255, 0.6);
+      transition: width 0.2s var(--ease);
+    }
+
+    .singularity-hud-count {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      color: var(--muted-bright);
+      font-size: 9px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .singularity-hud-total {
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 500;
+    }
+
+    .singularity-mult {
+      padding-left: 8px;
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f0d8ff;
+      font-size: 9px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      text-shadow: 0 0 10px rgba(188, 118, 255, 0.6);
+    }
+
+    .singularity-hud.is-charged {
+      border-color: rgba(174, 118, 255, 0.35);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 0 26px rgba(125, 66, 255, 0.16);
+      animation: singularity-charge-pulse 1.7s ease-in-out infinite;
+    }
+
+    .singularity-hud.is-active {
+      border-color: rgba(214, 169, 255, 0.62);
+      background:
+        linear-gradient(180deg, rgba(38, 12, 60, 0.96), rgba(12, 3, 23, 0.94));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 0 30px rgba(152, 78, 255, 0.25);
+    }
+
+    .singularity-hud.is-active .singularity-hud-label {
+      color: #e7caff;
+      text-shadow: 0 0 12px rgba(192, 122, 255, 0.6);
+    }
+
+    .singularity-hud.is-active .singularity-orb {
+      border-color: #e5c5ff;
+      background: #000;
+      box-shadow:
+        0 0 13px rgba(192, 118, 255, 0.9),
+        0 0 26px rgba(117, 38, 255, 0.55);
+      animation: singularity-orb-pulse 1.2s ease-in-out infinite;
+    }
+
+    .singularity-hud.is-active .singularity-hud-track span {
+      width: 100%;
+      background: linear-gradient(90deg, #8e4bff, #fff1ff, #d26eff);
+      box-shadow: 0 0 14px rgba(220, 169, 255, 0.8);
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      height: 94px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+      border-radius: 14px;
+      color: inherit;
+      text-decoration: none;
+      user-select: none;
+      transition: opacity 0.2s ease, filter 0.2s ease;
+    }
+
+    .brand:hover {
+      opacity: 0.92;
+      filter: brightness(1.08);
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(122, 247, 200, 0.2);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 28% 20%, rgba(122, 247, 200, 0.18), transparent 55%),
+        rgba(255, 255, 255, 0.035);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .brand-mark svg {
+      width: 30px;
+      height: 30px;
+      overflow: visible;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      line-height: 1;
+    }
+
+    .brand-title {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+    }
+
+    .brand-sub {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .autosave {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-right: 4px;
+      padding: 8px 11px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 0.17em;
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 8px rgba(122, 247, 200, 0.8);
+    }
+
+    .autosave.is-warning .status-dot {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 210, 125, 0.8);
+    }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--muted-bright);
+      cursor: pointer;
+      transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s var(--ease);
+    }
+
+    .icon-btn:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      border-color: var(--stroke-strong);
+      transform: translateY(-1px);
+    }
+
+    .icon-btn:active {
+      transform: translateY(0) scale(0.96);
+    }
+
+    .icon-btn svg {
+      width: 17px;
+      height: 17px;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 3px;
+      border: 1px solid var(--stroke);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .lang-switch button {
+      min-width: 29px;
+      height: 25px;
+      padding: 0 6px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition:
+        color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+    }
+
+    .lang-switch button:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .lang-switch button.is-active {
+      color: var(--text);
+      background: rgba(146, 130, 255, 0.16);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .icon-btn--danger:hover {
+      color: var(--danger);
+      border-color: rgba(255, 123, 146, 0.25);
+      background: rgba(255, 123, 146, 0.07);
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(370px, 0.9fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .panel {
+      position: relative;
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(165deg, rgba(24, 29, 50, 0.86), rgba(9, 11, 22, 0.92));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.055),
+        0 32px 90px rgba(0, 0, 0, 0.34);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+    }
+
+    .panel::after {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      border-radius: inherit;
+      background: radial-gradient(80% 40% at 50% 0%, rgba(255, 255, 255, 0.025), transparent 70%);
+      content: "";
+      pointer-events: none;
+    }
+
+    .play-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: clamp(620px, calc(100vh - 124px), 700px);
+      padding: 26px 32px 26px;
+      overflow: hidden;
+    }
+
+    .resource-head {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 9.5px;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 9px rgba(122, 247, 200, 0.85);
+      animation: live-pulse 2.4s ease-in-out infinite;
+    }
+
+    .rank-pill {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 8.5px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .rank-pill strong {
+      max-width: 150px;
+      overflow: hidden;
+      color: var(--violet-bright);
+      font-weight: 600;
+      text-overflow: ellipsis;
+    }
+
+    .balance-block {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      margin-top: 21px;
+      text-align: center;
+    }
+
+    .balance {
+      display: block;
+      margin: 0 auto;
+      color: var(--text);
+      font-size: clamp(58px, 7vw, 88px);
+      font-weight: 600;
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 0 48px rgba(122, 247, 200, 0.11);
+    }
+
+    .balance.is-bumped {
+      animation: balance-bump 0.25s var(--ease);
+    }
+
+    .rate-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .rate-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 11px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.025);
+      color: var(--muted);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .rate-pill strong {
+      color: var(--muted-bright);
+      font-weight: 600;
+    }
+
+    .rate-pill--click {
+      transition:
+        color 0.3s ease,
+        background 0.3s ease,
+        border-color 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .rate-pill--click.is-surge {
+      border-color: rgba(255, 177, 85, 0.38);
+      background:
+        linear-gradient(100deg, rgba(255, 109, 16, 0.19), rgba(255, 203, 94, 0.08));
+      color: #ffd296;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 240, 196, 0.1),
+        0 0 22px rgba(255, 96, 0, 0.2);
+      animation: surge-pill-pulse 1.4s ease-in-out infinite;
+    }
+
+    .rate-pill--click.is-surge strong {
+      color: #ffe8b8;
+    }
+
+    .rate-pill--click.is-surge svg {
+      color: #ffb054;
+      filter: drop-shadow(0 0 5px rgba(255, 129, 26, 0.7));
+    }
+
+    .surge-timer {
+      color: #ffc36a;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+
+    .rate-pill--mint {
+      border-color: rgba(122, 247, 200, 0.11);
+      background: rgba(122, 247, 200, 0.045);
+    }
+
+    .rate-pill--mint strong {
+      color: var(--mint);
+    }
+
+    .rate-pill svg {
+      width: 10px;
+      height: 10px;
+      opacity: 0.8;
+    }
+
+    .core-stage {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 350px;
+      margin: 2px 0 4px;
+      isolation: isolate;
+    }
+
+    .core-halo {
+      position: absolute;
+      width: min(70vw, 420px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle,
+        rgba(91, 240, 201, 0.17) 0%,
+        rgba(99, 81, 210, 0.09) 42%,
+        transparent 70%
+      );
+      filter: blur(9px);
+      opacity: 0.95;
+      animation: halo-breathe 6.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .orbit {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .orbit--dashed {
+      width: min(78vw, 372px);
+      aspect-ratio: 1;
+      border: 1px dashed rgba(255, 255, 255, 0.11);
+      transform: translate(-50%, -50%) rotate(0deg);
+      animation: orbit-spin 64s linear infinite;
+    }
+
+    .orbit--dashed::before {
+      position: absolute;
+      top: 14%;
+      left: 13%;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 13px rgba(122, 247, 200, 0.9);
+      content: "";
+    }
+
+    .orbit--wide {
+      width: min(100%, 478px);
+      height: min(31vw, 196px);
+      border: 1px solid rgba(146, 130, 255, 0.17);
+      transform: translate(-50%, -50%) rotate(-20deg);
+      box-shadow: 0 0 32px rgba(146, 130, 255, 0.035);
+    }
+
+    .orbit--wide::after {
+      position: absolute;
+      top: 50%;
+      right: -3px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--violet);
+      box-shadow: 0 0 14px rgba(146, 130, 255, 0.85);
+      content: "";
+    }
+
+    .orbit--narrow {
+      width: min(88vw, 412px);
+      height: min(27vw, 162px);
+      border: 1px solid rgba(122, 247, 200, 0.09);
+      transform: translate(-50%, -50%) rotate(62deg);
+    }
+
+    .orbit--narrow::before {
+      position: absolute;
+      bottom: 15%;
+      left: 16%;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 10px rgba(255, 210, 125, 0.8);
+      content: "";
+    }
+
+    .core {
+      position: relative;
+      z-index: 2;
+      width: clamp(202px, 26vw, 270px);
+      aspect-ratio: 1;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      animation: core-float 7.5s ease-in-out infinite;
+      -webkit-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+
+    .core::before {
+      position: absolute;
+      inset: -17px;
+      z-index: -1;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 20deg,
+        transparent 0deg,
+        rgba(122, 247, 200, 0.32) 48deg,
+        transparent 96deg,
+        transparent 250deg,
+        rgba(146, 130, 255, 0.28) 294deg,
+        transparent 340deg
+      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      content: "";
+      animation: orbit-spin 14s linear infinite;
+      pointer-events: none;
+    }
+
+    .core-surface {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border: 1px solid rgba(194, 255, 234, 0.32);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 32% 22%, rgba(231, 255, 247, 0.92) 0%, rgba(206, 255, 240, 0.28) 4%, transparent 12%),
+        radial-gradient(circle at 35% 31%, #b8ffe7 0%, #72efc9 10%, #2ac6a7 27%, #178e86 44%, #14616e 57%, #2f2771 78%, #0a0819 100%);
+      box-shadow:
+        inset -22px -28px 58px rgba(4, 4, 20, 0.72),
+        inset 15px 16px 38px rgba(200, 255, 238, 0.14),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+        0 28px 64px rgba(0, 0, 0, 0.5),
+        0 0 56px rgba(80, 241, 198, 0.21),
+        0 0 130px rgba(95, 72, 210, 0.15);
+      transition: filter 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .core:hover .core-surface {
+      filter: brightness(1.08) saturate(1.06);
+      box-shadow:
+        inset -22px -28px 58px rgba(4, 4, 20, 0.68),
+        inset 15px 16px 38px rgba(200, 255, 238, 0.16),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 28px 64px rgba(0, 0, 0, 0.5),
+        0 0 72px rgba(80, 241, 198, 0.29),
+        0 0 150px rgba(95, 72, 210, 0.19);
+    }
+
+    .core-surface::before {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 72% 68%, rgba(24, 9, 54, 0.7) 0 7%, transparent 17%),
+        radial-gradient(circle at 63% 38%, rgba(10, 29, 47, 0.28) 0 5%, transparent 12%),
+        radial-gradient(circle at 43% 78%, rgba(25, 13, 60, 0.48) 0 8%, transparent 19%),
+        radial-gradient(circle at 24% 56%, rgba(255, 255, 255, 0.07) 0 2%, transparent 8%);
+      content: "";
+      mix-blend-mode: multiply;
+    }
+
+    .core-surface::after {
+      position: absolute;
+      inset: 7%;
+      border-radius: 50%;
+      background:
+        conic-gradient(
+          from 210deg,
+          transparent 0deg,
+          rgba(146, 130, 255, 0.17) 42deg,
+          transparent 104deg,
+          transparent 220deg,
+          rgba(122, 247, 200, 0.08) 280deg,
+          transparent 330deg
+        );
+      filter: blur(7px);
+      content: "";
+      mix-blend-mode: screen;
+      animation: surface-drift 18s linear infinite;
+    }
+
+    .core-star {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 2;
+      width: 38%;
+      height: 38%;
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 3px 8px rgba(0, 22, 24, 0.55));
+      opacity: 0.88;
+      pointer-events: none;
+    }
+
+    .core-label {
+      position: absolute;
+      bottom: 18%;
+      left: 50%;
+      z-index: 3;
+      width: 84%;
+      transform: translateX(-50%);
+      color: rgba(226, 255, 246, 0.5);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      text-align: center;
+      text-indent: 0.3em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      pointer-events: none;
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    .core-label.is-surge {
+      color: rgba(255, 231, 175, 0.92);
+      text-shadow: 0 0 14px rgba(255, 112, 10, 0.85);
+    }
+
+    body.is-surging .live-dot {
+      background: var(--gold);
+      box-shadow: 0 0 11px rgba(255, 151, 48, 0.95);
+    }
+
+    body.is-surging .balance {
+      text-shadow: 0 0 58px rgba(255, 119, 18, 0.28);
+    }
+
+    body.is-surging .core-surface {
+      box-shadow:
+        inset -22px -28px 58px rgba(4, 4, 20, 0.68),
+        inset 15px 16px 38px rgba(200, 255, 238, 0.16),
+        inset 0 0 0 1px rgba(255, 236, 193, 0.08),
+        0 28px 64px rgba(0, 0, 0, 0.5),
+        0 0 72px rgba(255, 131, 33, 0.24),
+        0 0 160px rgba(255, 72, 0, 0.16);
+    }
+
+    body.is-surging .core-halo {
+      background: radial-gradient(
+        circle,
+        rgba(255, 172, 71, 0.25) 0%,
+        rgba(255, 86, 0, 0.12) 44%,
+        transparent 72%
+      );
+    }
+
+    .fx-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      overflow: hidden;
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .particle {
+      position: absolute;
+      width: var(--size, 5px);
+      height: var(--size, 5px);
+      border-radius: 50%;
+      background: var(--color);
+      box-shadow: 0 0 8px var(--color);
+      opacity: 0;
+      transform: translate(-50%, -50%);
+      animation: particle-burst 0.7s cubic-bezier(0.15, 0.65, 0.3, 1) forwards;
+      pointer-events: none;
+    }
+
+    .particle.is-crit {
+      box-shadow: 0 0 12px var(--color);
+    }
+
+    .float-text {
+      position: absolute;
+      z-index: 5;
+      color: var(--mint);
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      text-shadow: 0 0 18px rgba(122, 247, 200, 0.5);
+      white-space: nowrap;
+      transform: translate(-50%, -50%);
+      animation: float-up 0.95s cubic-bezier(0.18, 0.75, 0.25, 1) forwards;
+      pointer-events: none;
+    }
+
+    .float-text.is-crit {
+      color: var(--gold);
+      font-size: 18px;
+      text-shadow: 0 0 22px rgba(255, 210, 125, 0.55);
+    }
+
+    .click-ripple {
+      position: absolute;
+      width: 62px;
+      height: 62px;
+      border: 1px solid rgba(122, 247, 200, 0.44);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      animation: ripple-out 0.62s ease-out forwards;
+      pointer-events: none;
+    }
+
+    .click-ripple.is-crit {
+      border-color: rgba(255, 210, 125, 0.55);
+    }
+
+    .combo-wrap {
+      position: relative;
+      z-index: 2;
+      width: min(350px, 100%);
+      margin-top: 2px;
+    }
+
+    .combo-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.19em;
+      text-transform: uppercase;
+    }
+
+    .combo-value {
+      color: var(--muted-bright);
+      font-size: 9px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.06em;
+      transition: color 0.2s ease;
+    }
+
+    .combo-value.is-active {
+      color: var(--mint);
+    }
+
+    .combo-track {
+      height: 4px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .combo-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--mint), var(--violet));
+      box-shadow: 0 0 10px rgba(122, 247, 200, 0.28);
+      transition: width 0.12s linear;
+    }
+
+    .hint {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .hint-sep {
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 21px;
+      padding: 0 6px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-bottom-color: rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted-bright);
+      font-family: var(--font);
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: clamp(620px, calc(100vh - 124px), 700px);
+      padding: 25px 24px 22px;
+    }
+
+    .shop-head {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 1px;
+    }
+
+    .shop-head h2 {
+      margin: 5px 0 0;
+      font-size: 23px;
+      font-weight: 600;
+      letter-spacing: -0.035em;
+    }
+
+    .shop-sub {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1.4;
+    }
+
+    .shop-badge {
+      flex: 0 0 auto;
+      margin-bottom: 2px;
+      padding: 5px 8px;
+      border: 1px solid var(--stroke);
+      border-radius: 7px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .shop-list {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .upgrade {
+      display: grid;
+      grid-template-columns: 46px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 13px;
+      border: 1px solid rgba(255, 255, 255, 0.065);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.024);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition:
+        transform 0.22s var(--ease),
+        background 0.22s ease,
+        border-color 0.22s ease,
+        box-shadow 0.22s ease;
+    }
+
+    .upgrade:hover:not(:disabled) {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.045);
+      transform: translateY(-1px);
+    }
+
+    .upgrade:active:not(:disabled) {
+      transform: translateY(0) scale(0.995);
+    }
+
+    .upgrade.is-affordable {
+      border-color: rgba(122, 247, 200, 0.2);
+      background:
+        linear-gradient(100deg, rgba(122, 247, 200, 0.078), rgba(255, 255, 255, 0.018) 70%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    }
+
+    .upgrade.is-affordable:hover {
+      border-color: rgba(122, 247, 200, 0.32);
+      background:
+        linear-gradient(100deg, rgba(122, 247, 200, 0.1), rgba(255, 255, 255, 0.025) 70%);
+    }
+
+    .upgrade.is-affordable .u-cost {
+      color: var(--mint);
+    }
+
+    .upgrade.is-affordable .u-cost svg {
+      filter: drop-shadow(0 0 5px rgba(122, 247, 200, 0.55));
+    }
+
+    .upgrade.is-maxed {
+      cursor: default;
+      opacity: 0.58;
+    }
+
+    .upgrade.is-denied {
+      border-color: rgba(255, 123, 146, 0.3);
+    }
+
+    .u-icon {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 1px solid rgba(122, 247, 200, 0.13);
+      border-radius: 13px;
+      background: rgba(122, 247, 200, 0.065);
+      color: var(--mint);
+    }
+
+    .u-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .u-icon--violet {
+      border-color: rgba(146, 130, 255, 0.15);
+      background: rgba(146, 130, 255, 0.075);
+      color: var(--violet-bright);
+    }
+
+    .u-icon--gold {
+      border-color: rgba(255, 210, 125, 0.14);
+      background: rgba(255, 210, 125, 0.07);
+      color: var(--gold);
+    }
+
+    .u-icon--ember {
+      border-color: rgba(255, 125, 49, 0.2);
+      background: rgba(255, 94, 16, 0.085);
+      color: #ffaf5c;
+    }
+
+    .u-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .u-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+    }
+
+    .u-name {
+      overflow: hidden;
+      font-size: 12.5px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .u-level {
+      flex: 0 0 auto;
+      margin-left: auto;
+      padding: 2px 6px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 7.5px;
+      font-weight: 600;
+      letter-spacing: 0.11em;
+      white-space: nowrap;
+    }
+
+    .u-desc {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .u-current {
+      color: rgba(122, 247, 200, 0.72);
+      font-size: 8.5px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+    }
+
+    .u-buy {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      min-width: 56px;
+    }
+
+    .u-cost {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--text);
+      font-size: 11.5px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .u-cost svg {
+      width: 9px;
+      height: 9px;
+      color: var(--mint);
+    }
+
+    .u-cta {
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .upgrade.is-affordable .u-cta {
+      color: var(--mint);
+    }
+
+    .rank-card {
+      position: relative;
+      z-index: 1;
+      margin-top: auto;
+      padding: 13px 15px 14px;
+      border: 1px solid rgba(146, 130, 255, 0.13);
+      border-radius: 16px;
+      background:
+        radial-gradient(130% 160% at 100% 0%, rgba(146, 130, 255, 0.11), transparent 62%),
+        rgba(255, 255, 255, 0.018);
+    }
+
+    .rank-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .rank-top .eyebrow {
+      font-size: 8px;
+      letter-spacing: 0.18em;
+    }
+
+    .rank-next {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 8.5px;
+      font-variant-numeric: tabular-nums;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rank-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 7px;
+    }
+
+    .rank-name {
+      color: var(--violet-bright);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .rank-pct {
+      color: var(--muted);
+      font-size: 8.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .rank-track {
+      height: 3px;
+      margin-top: 9px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.07);
+    }
+
+    .rank-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--violet), var(--mint));
+      box-shadow: 0 0 12px rgba(146, 130, 255, 0.38);
+      transition: width 0.45s var(--ease);
+    }
+
+    .stats-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      overflow: hidden;
+      border: 1px solid var(--stroke);
+      border-radius: 13px;
+      background: var(--stroke);
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+      padding: 9px 10px;
+      background: rgba(11, 13, 25, 0.82);
+    }
+
+    .stat-label {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 7px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .stat strong {
+      overflow: hidden;
+      color: var(--muted-bright);
+      font-size: 11px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.01em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+
+    /* --- Solar Surge atmosphere ---------------------------------------- */
+
+    .solar-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      overflow: hidden;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+    }
+
+    .solar-overlay.is-active {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.32s ease, visibility 0s linear 0s;
+    }
+
+    .solar-overlay:not(.is-active) .solar-edge,
+    .solar-overlay:not(.is-active) .solar-fire-svg,
+    .solar-overlay:not(.is-active) .fire-layer-secondary {
+      animation-play-state: paused;
+    }
+
+    .solar-frame {
+      position: absolute;
+      inset: 0;
+      border-radius: 2px;
+      box-shadow:
+        inset 0 0 0 2px rgba(255, 182, 82, 0.88),
+        inset 0 0 22px rgba(255, 124, 19, 0.55),
+        inset 0 0 105px rgba(255, 55, 0, 0.2);
+    }
+
+    .solar-overlay.is-active .solar-frame {
+      animation: solar-frame-pulse 1.7s ease-in-out infinite alternate;
+    }
+
+    .solar-edge {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.82;
+      filter: blur(17px) saturate(1.45);
+      mix-blend-mode: screen;
+      animation: fire-flicker 1.8s ease-in-out infinite alternate;
+    }
+
+    .solar-edge--bottom {
+      right: -5%;
+      bottom: -46px;
+      left: -5%;
+      height: 195px;
+      background:
+        linear-gradient(0deg, rgba(255, 94, 0, 0.5), transparent 76%),
+        radial-gradient(ellipse 8% 62% at 5% 100%, rgba(255, 239, 169, 0.94) 0%, rgba(255, 148, 26, 0.76) 25%, rgba(255, 66, 0, 0.26) 60%, transparent 78%),
+        radial-gradient(ellipse 7% 52% at 13% 100%, rgba(255, 224, 123, 0.84) 0%, rgba(255, 124, 0, 0.62) 30%, transparent 76%),
+        radial-gradient(ellipse 10% 68% at 22% 100%, rgba(255, 238, 165, 0.8) 0%, rgba(255, 141, 17, 0.6) 34%, transparent 78%),
+        radial-gradient(ellipse 6% 48% at 31% 100%, rgba(255, 213, 109, 0.9) 0%, rgba(255, 108, 0, 0.58) 34%, transparent 76%),
+        radial-gradient(ellipse 9% 66% at 41% 100%, rgba(255, 232, 144, 0.78) 0%, rgba(255, 128, 8, 0.55) 36%, transparent 78%),
+        radial-gradient(ellipse 11% 54% at 51% 100%, rgba(255, 209, 100, 0.86) 0%, rgba(255, 98, 0, 0.55) 32%, transparent 76%),
+        radial-gradient(ellipse 7% 70% at 61% 100%, rgba(255, 241, 174, 0.84) 0%, rgba(255, 148, 23, 0.62) 32%, transparent 78%),
+        radial-gradient(ellipse 9% 50% at 70% 100%, rgba(255, 220, 118, 0.82) 0%, rgba(255, 111, 0, 0.58) 34%, transparent 76%),
+        radial-gradient(ellipse 10% 68% at 80% 100%, rgba(255, 233, 149, 0.8) 0%, rgba(255, 134, 12, 0.6) 34%, transparent 78%),
+        radial-gradient(ellipse 7% 54% at 89% 100%, rgba(255, 217, 110, 0.88) 0%, rgba(255, 105, 0, 0.58) 32%, transparent 76%),
+        radial-gradient(ellipse 9% 64% at 97% 100%, rgba(255, 237, 166, 0.8) 0%, rgba(255, 142, 19, 0.58) 34%, transparent 78%);
+      transform-origin: bottom center;
+    }
+
+    .solar-edge--top {
+      top: -52px;
+      right: -5%;
+      left: -5%;
+      height: 150px;
+      background:
+        linear-gradient(180deg, rgba(255, 80, 0, 0.38), transparent 74%),
+        radial-gradient(ellipse 10% 65% at 7% 0%, rgba(255, 226, 130, 0.72) 0%, rgba(255, 113, 0, 0.46) 36%, transparent 76%),
+        radial-gradient(ellipse 8% 48% at 19% 0%, rgba(255, 205, 95, 0.68) 0%, rgba(255, 89, 0, 0.4) 34%, transparent 74%),
+        radial-gradient(ellipse 9% 62% at 33% 0%, rgba(255, 233, 149, 0.68) 0%, rgba(255, 120, 0, 0.44) 35%, transparent 76%),
+        radial-gradient(ellipse 7% 52% at 47% 0%, rgba(255, 208, 99, 0.7) 0%, rgba(255, 96, 0, 0.42) 34%, transparent 74%),
+        radial-gradient(ellipse 10% 66% at 62% 0%, rgba(255, 227, 135, 0.66) 0%, rgba(255, 119, 0, 0.42) 36%, transparent 76%),
+        radial-gradient(ellipse 8% 50% at 75% 0%, rgba(255, 212, 102, 0.68) 0%, rgba(255, 95, 0, 0.4) 34%, transparent 74%),
+        radial-gradient(ellipse 9% 62% at 88% 0%, rgba(255, 233, 149, 0.66) 0%, rgba(255, 120, 0, 0.42) 36%, transparent 76%),
+        radial-gradient(ellipse 8% 50% at 97% 0%, rgba(255, 210, 100, 0.68) 0%, rgba(255, 93, 0, 0.4) 34%, transparent 74%);
+      transform: scaleY(-1);
+      transform-origin: top center;
+      animation-delay: -0.8s;
+      opacity: 0.68;
+    }
+
+    .solar-edge--left,
+    .solar-edge--right {
+      top: -5%;
+      bottom: -5%;
+      width: 155px;
+      background:
+        linear-gradient(90deg, rgba(255, 94, 0, 0.4), transparent 78%),
+        radial-gradient(ellipse 54% 7% at 0% 6%, rgba(255, 233, 146, 0.78) 0%, rgba(255, 118, 0, 0.42) 36%, transparent 76%),
+        radial-gradient(ellipse 42% 5% at 0% 19%, rgba(255, 206, 94, 0.72) 0%, rgba(255, 92, 0, 0.38) 34%, transparent 74%),
+        radial-gradient(ellipse 58% 8% at 0% 33%, rgba(255, 235, 151, 0.74) 0%, rgba(255, 126, 0, 0.4) 36%, transparent 76%),
+        radial-gradient(ellipse 42% 6% at 0% 47%, rgba(255, 209, 96, 0.7) 0%, rgba(255, 97, 0, 0.38) 34%, transparent 74%),
+        radial-gradient(ellipse 58% 7% at 0% 61%, rgba(255, 228, 138, 0.74) 0%, rgba(255, 117, 0, 0.4) 36%, transparent 76%),
+        radial-gradient(ellipse 44% 6% at 0% 75%, rgba(255, 208, 94, 0.7) 0%, rgba(255, 91, 0, 0.38) 34%, transparent 74%),
+        radial-gradient(ellipse 56% 8% at 0% 89%, rgba(255, 233, 147, 0.72) 0%, rgba(255, 120, 0, 0.4) 36%, transparent 76%);
+      animation-delay: -1.2s;
+    }
+
+    .solar-edge--left {
+      left: -58px;
+    }
+
+    .solar-edge--right {
+      right: -58px;
+      transform: scaleX(-1);
+    }
+
+
+
+    .solar-licks {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .solar-lick {
+      position: absolute;
+      bottom: -18px;
+      background: linear-gradient(
+        0deg,
+        rgba(255, 249, 209, 0.94) 0%,
+        rgba(255, 199, 77, 0.82) 15%,
+        rgba(255, 117, 0, 0.55) 45%,
+        rgba(255, 48, 0, 0) 82%
+      );
+      clip-path: polygon(50% 0%, 64% 22%, 58% 43%, 72% 62%, 62% 76%, 84% 100%, 16% 100%, 34% 76%, 26% 60%, 42% 42%, 35% 20%);
+      filter: blur(4px) saturate(1.2);
+      mix-blend-mode: screen;
+      transform-origin: 50% 100%;
+      opacity: 0.6;
+      animation: flame-lick-dance var(--lick-duration, 1.4s) ease-in-out var(--lick-delay, 0s) infinite alternate;
+    }
+
+    .solar-lick--b {
+      clip-path: polygon(58% 0%, 82% 28%, 68% 48%, 76% 66%, 100% 100%, 8% 100%, 29% 63%, 23% 41%, 45% 18%);
+    }
+
+    .solar-lick--c {
+      clip-path: polygon(42% 0%, 63% 24%, 51% 45%, 67% 60%, 56% 78%, 91% 100%, 6% 100%, 24% 71%, 38% 54%, 21% 33%);
+    }
+
+    .solar-fire-svg {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.94;
+      animation: fire-frame-flicker 1.9s ease-in-out infinite alternate;
+    }
+
+    .solar-fire-svg .fire-layer-secondary {
+      animation: fire-secondary 2.7s ease-in-out infinite alternate;
+    }
+
+    .solar-embers {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .solar-ember {
+      position: absolute;
+      width: var(--ember-size, 3px);
+      height: var(--ember-size, 3px);
+      border-radius: 50%;
+      background: var(--ember-color, #ffb347);
+      box-shadow: 0 0 8px 1px rgba(255, 112, 12, 0.8);
+      opacity: 0;
+      animation: ember-rise var(--ember-duration, 1.7s) ease-out forwards;
+      pointer-events: none;
+    }
+
+
+    /* --- Singularity event --------------------------------------------- */
+
+    body.is-singularity {
+      --mint: #c994ff;
+      --mint-deep: #9a55ff;
+      --violet: #b46bff;
+      --violet-bright: #e5c7ff;
+      --gold: #e8b5ff;
+      --danger: #ff8be6;
+    }
+
+    .singularity-chaos {
+      position: fixed;
+      inset: 0;
+      z-index: 44;
+      overflow: hidden;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 18% 18%, rgba(155, 18, 255, 0.32), transparent 65%),
+        radial-gradient(ellipse 60% 75% at 82% 78%, rgba(84, 0, 180, 0.38), transparent 65%),
+        radial-gradient(ellipse 45% 45% at 55% 48%, rgba(208, 93, 255, 0.15), transparent 70%),
+        repeating-linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.028) 0,
+          rgba(255, 255, 255, 0.028) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      box-shadow: inset 0 0 160px rgba(114, 0, 255, 0.5);
+      mix-blend-mode: screen;
+      animation: singularity-chaos-pulse 1.7s steps(2, end) infinite;
+    }
+
+    .singularity-chaos::before {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, transparent 0%, rgba(255, 0, 242, 0.1) 45%, transparent 76%),
+        repeating-linear-gradient(
+          90deg,
+          transparent 0,
+          transparent 12%,
+          rgba(174, 79, 255, 0.09) 12.2%,
+          transparent 12.8%
+        );
+      content: "";
+      animation: singularity-chaos-sweep 2.4s linear infinite;
+    }
+
+    .singularity-chaos::after {
+      position: absolute;
+      top: 31%;
+      right: -10%;
+      left: -10%;
+      height: 7%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.11) 18%,
+        rgba(238, 155, 255, 0.22) 48%,
+        rgba(255, 255, 255, 0.05) 74%,
+        transparent
+      );
+      content: "";
+      mix-blend-mode: screen;
+      animation: singularity-chaos-slice 1.35s steps(1, end) infinite;
+    }
+
+    .singularity-curtain {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      background: #000;
+      opacity: 0;
+      pointer-events: auto;
+      transition: opacity 2.5s ease;
+    }
+
+    .singularity-curtain.is-active {
+      opacity: 1;
+    }
+
+    .singularity-message {
+      position: fixed;
+      inset: 0;
+      z-index: 85;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: #fff;
+      font-size: clamp(26px, 5vw, 62px);
+      font-weight: 500;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .singularity-message span {
+      display: block;
+      max-width: min(800px, 90vw);
+    }
+
+    .singularity-message.is-opening span {
+      text-shadow:
+        0 0 16px rgba(255, 255, 255, 0.55),
+        0 0 54px rgba(255, 255, 255, 0.22);
+      animation: singularity-message-flicker 1.15s steps(1, end) infinite;
+    }
+
+    .singularity-message.is-closing span {
+      padding: 12px 20px;
+      border: 1px solid rgba(196, 133, 255, 0.22);
+      border-radius: 12px;
+      background: rgba(8, 4, 17, 0.68);
+      box-shadow: 0 16px 46px rgba(0, 0, 0, 0.38);
+      color: #f1deff;
+      font-size: clamp(16px, 2.8vw, 26px);
+      letter-spacing: -0.025em;
+      text-shadow: 0 0 22px rgba(175, 105, 255, 0.35);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      animation: singularity-message-close 2.8s ease forwards;
+    }
+
+    .singularity-flash {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .singularity-flash.is-flashing {
+      animation: singularity-white-flash 0.82s ease-out both;
+    }
+
+    /* Text and box instability while the singularity is open. */
+    body.is-singularity .app {
+      text-shadow:
+        1px 0 rgba(255, 0, 224, 0.34),
+        -1px 0 rgba(0, 210, 255, 0.28);
+    }
+
+    body.is-singularity .brand-title,
+    body.is-singularity .brand-sub,
+    body.is-singularity .autosave,
+    body.is-singularity .balance,
+    body.is-singularity .eyebrow,
+    body.is-singularity .rank-pill,
+    body.is-singularity .rate-pill,
+    body.is-singularity .combo-meta,
+    body.is-singularity .hint,
+    body.is-singularity .shop-head h2,
+    body.is-singularity .shop-sub,
+    body.is-singularity .shop-badge,
+    body.is-singularity .u-name,
+    body.is-singularity .u-desc,
+    body.is-singularity .u-current,
+    body.is-singularity .u-level,
+    body.is-singularity .u-cost,
+    body.is-singularity .u-cta,
+    body.is-singularity .rank-name,
+    body.is-singularity .rank-next,
+    body.is-singularity .rank-pct,
+    body.is-singularity .stat-label,
+    body.is-singularity .stat strong,
+    body.is-singularity .core-label,
+    body.is-singularity .singularity-hud-label,
+    body.is-singularity .singularity-hud-count,
+    body.is-singularity .singularity-hud-total,
+    body.is-singularity .singularity-mult {
+      animation: singularity-text-glitch 0.38s steps(2, end) infinite;
+    }
+
+    body.is-singularity .upgrade:nth-child(2n) .u-name,
+    body.is-singularity .upgrade:nth-child(2n) .u-cost,
+    body.is-singularity .stat:nth-child(2) strong {
+      animation-delay: -0.19s;
+    }
+
+    body.is-singularity .upgrade:nth-child(3n) .u-name,
+    body.is-singularity .upgrade:nth-child(3n) .u-desc {
+      animation-delay: -0.29s;
+    }
+
+    body.is-singularity .play-panel,
+    body.is-singularity .side-panel {
+      border-color: rgba(190, 132, 255, 0.2);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 32px 90px rgba(40, 0, 80, 0.5);
+    }
+
+    body.is-singularity .upgrade {
+      animation: singularity-box-flicker 2.15s steps(1, end) infinite;
+    }
+
+    body.is-singularity .upgrade:nth-child(2n) {
+      animation-delay: -0.72s;
+    }
+
+    body.is-singularity .float-text {
+      color: #e8c9ff;
+      text-shadow: 0 0 22px rgba(179, 100, 255, 0.8);
+    }
+
+    body.is-singularity .float-text.is-crit {
+      color: #fff;
+      text-shadow: 0 0 25px rgba(207, 154, 255, 0.9);
+    }
+
+    body.is-singularity .click-ripple {
+      border-color: rgba(205, 151, 255, 0.6);
+    }
+
+    /* The core becomes an event horizon. */
+    body.is-singularity .core-surface {
+      background:
+        radial-gradient(
+          circle at 50% 50%,
+          #000 0%,
+          #000 31%,
+          #07000d 37%,
+          rgba(149, 72, 255, 0.88) 40%,
+          rgba(250, 236, 255, 0.94) 42%,
+          rgba(158, 82, 255, 0.74) 45%,
+          rgba(53, 0, 98, 0.64) 54%,
+          #020005 74%
+        );
+      box-shadow:
+        inset 0 0 55px rgba(0, 0, 0, 0.98),
+        inset 0 0 0 1px rgba(236, 212, 255, 0.18),
+        0 0 45px rgba(168, 89, 255, 0.48),
+        0 0 165px rgba(94, 21, 255, 0.35);
+      filter: brightness(1);
+      animation: singularity-black-hole-breathe 2.5s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-surface::before {
+      background:
+        radial-gradient(
+          circle,
+          transparent 31%,
+          rgba(199, 138, 255, 0.2) 40%,
+          rgba(108, 31, 200, 0.14) 49%,
+          transparent 60%
+        );
+      mix-blend-mode: screen;
+      animation: singularity-black-hole-breathe 2.8s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-surface::after {
+      background:
+        radial-gradient(circle at 37% 32%, rgba(255, 255, 255, 0.12), transparent 26%);
+      filter: blur(10px);
+      mix-blend-mode: screen;
+      animation: singularity-black-hole-breathe 2.3s ease-in-out infinite;
+    }
+
+    body.is-singularity .core-star {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.25) rotate(140deg);
+    }
+
+    body.is-singularity .core::before {
+      background: conic-gradient(
+        from 10deg,
+        transparent 0deg,
+        rgba(213, 169, 255, 0.5) 42deg,
+        transparent 92deg,
+        transparent 220deg,
+        rgba(133, 55, 255, 0.45) 290deg,
+        transparent 340deg
+      );
+      animation-duration: 3.4s;
+    }
+
+    body.is-singularity .core::after {
+      opacity: 1;
+      animation: singularity-ring-spin 4.6s linear infinite;
+    }
+
+    body.is-singularity .core-halo {
+      background: radial-gradient(
+        circle,
+        rgba(184, 103, 255, 0.33) 0%,
+        rgba(91, 17, 170, 0.2) 44%,
+        transparent 72%
+      );
+      animation-duration: 2.4s;
+    }
+
+    body.is-singularity .core-label {
+      color: #f6e8ff;
+      font-size: 8px;
+      letter-spacing: 0.14em;
+      text-shadow: 0 0 16px rgba(188, 112, 255, 0.75);
+    }
+
+    body.is-singularity .orbit {
+      border-color: rgba(181, 117, 255, 0.27);
+    }
+
+    body.is-singularity .orbit--dashed::before,
+    body.is-singularity .orbit--wide::after,
+    body.is-singularity .orbit--narrow::before {
+      background: #d3a2ff;
+      box-shadow: 0 0 14px rgba(186, 111, 255, 0.9);
+    }
+
+    body.is-singularity .core:hover .core-surface {
+      filter: brightness(1.06);
+    }
+
+    .core::after {
+      position: absolute;
+      inset: -7%;
+      z-index: -1;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 40deg,
+        transparent 0deg,
+        rgba(205, 151, 255, 0.5) 48deg,
+        transparent 104deg,
+        transparent 236deg,
+        rgba(127, 51, 255, 0.42) 292deg,
+        transparent 344deg
+      );
+      -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      content: "";
+      pointer-events: none;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 26px;
+      left: 50%;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      max-width: min(440px, calc(100vw - 32px));
+      padding: 11px 16px;
+      border: 1px solid var(--stroke-strong);
+      border-radius: 12px;
+      background: rgba(20, 24, 40, 0.96);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+      color: var(--text);
+      font-size: 11.5px;
+      line-height: 1.4;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 16px);
+      transition: opacity 0.24s ease, transform 0.24s var(--ease);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .toast::before {
+      flex: 0 0 auto;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--mint);
+      box-shadow: 0 0 8px rgba(122, 247, 200, 0.8);
+      content: "";
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    .toast.is-gold::before {
+      background: var(--gold);
+      box-shadow: 0 0 8px rgba(255, 210, 125, 0.8);
+    }
+
+    .toast.is-warning::before {
+      background: var(--danger);
+      box-shadow: 0 0 8px rgba(255, 123, 146, 0.8);
+    }
+
+    dialog {
+      width: min(408px, calc(100vw - 30px));
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid var(--stroke-strong);
+      border-radius: 22px;
+      background:
+        radial-gradient(100% 80% at 0% 0%, rgba(255, 123, 146, 0.07), transparent 55%),
+        #0e1120;
+      box-shadow: 0 40px 120px rgba(0, 0, 0, 0.65);
+      color: var(--text);
+    }
+
+    dialog::backdrop {
+      background: rgba(3, 4, 10, 0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .dialog-inner {
+      padding: 26px;
+    }
+
+    .dialog-icon {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 123, 146, 0.16);
+      border-radius: 13px;
+      background: rgba(255, 123, 146, 0.08);
+      color: var(--danger);
+    }
+
+    .dialog-icon svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    dialog h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+
+    dialog p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      min-height: 38px;
+      padding: 0 15px;
+      border: 1px solid var(--stroke);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--muted-bright);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--stroke-strong);
+      color: var(--text);
+    }
+
+    .btn--danger {
+      border-color: rgba(255, 123, 146, 0.22);
+      background: rgba(255, 123, 146, 0.1);
+      color: #ffb6c4;
+    }
+
+    .btn--danger:hover {
+      border-color: rgba(255, 123, 146, 0.4);
+      background: rgba(255, 123, 146, 0.16);
+      color: #ffd5dc;
+    }
+
+
+    @keyframes singularity-charge-pulse {
+      0%, 100% { border-color: rgba(174, 118, 255, 0.25); }
+      50% { border-color: rgba(198, 147, 255, 0.5); }
+    }
+
+    @keyframes singularity-orb-pulse {
+      0%, 100% { box-shadow: 0 0 12px rgba(192, 118, 255, 0.7); }
+      50% { box-shadow: 0 0 20px rgba(224, 183, 255, 0.95), 0 0 38px rgba(126, 45, 255, 0.6); }
+    }
+
+    @keyframes singularity-chaos-pulse {
+      0%, 100% { opacity: 0.78; }
+      50% { opacity: 1; }
+    }
+
+    @keyframes singularity-chaos-sweep {
+      0% { transform: translateX(-14%); }
+      50% { transform: translateX(8%); }
+      100% { transform: translateX(-14%); }
+    }
+
+    @keyframes singularity-chaos-slice {
+      0% { top: 8%; opacity: 0; }
+      10% { opacity: 0.9; }
+      26% { top: 21%; opacity: 0.35; }
+      42% { top: 63%; opacity: 0.75; }
+      58% { top: 38%; opacity: 0.1; }
+      76% { top: 82%; opacity: 0.8; }
+      100% { top: 92%; opacity: 0; }
+    }
+
+    @keyframes singularity-message-flicker {
+      0%, 12% { opacity: 0; }
+      13%, 32% { opacity: 1; }
+      33%, 42% { opacity: 0.08; }
+      43%, 64% { opacity: 1; }
+      65%, 72% { opacity: 0.1; }
+      73%, 92% { opacity: 1; }
+      93%, 100% { opacity: 0.2; }
+    }
+
+    @keyframes singularity-message-close {
+      0% { opacity: 0; transform: translateY(8px); }
+      12%, 75% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-5px); }
+    }
+
+    @keyframes singularity-white-flash {
+      0% { opacity: 0; }
+      7% { opacity: 1; }
+      35% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    @keyframes singularity-text-glitch {
+      0%, 100% {
+        translate: 0 0;
+        text-shadow: 1px 0 rgba(255, 0, 224, 0.55), -1px 0 rgba(0, 216, 255, 0.45);
+      }
+      24% {
+        translate: -1px 1px;
+        text-shadow: -2px 0 rgba(255, 0, 224, 0.62), 2px 0 rgba(0, 216, 255, 0.5);
+      }
+      48% {
+        translate: 1px 0;
+        text-shadow: 2px 0 rgba(255, 0, 224, 0.5), -2px 0 rgba(0, 216, 255, 0.45);
+      }
+      74% {
+        translate: -1px -1px;
+        text-shadow: 1px 0 rgba(255, 255, 255, 0.45), -2px 0 rgba(159, 67, 255, 0.5);
+      }
+    }
+
+    @keyframes singularity-box-flicker {
+      0%, 100% {
+        border-color: rgba(255, 255, 255, 0.065);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+      }
+      45% {
+        border-color: rgba(192, 138, 255, 0.32);
+        box-shadow: 0 0 18px rgba(151, 69, 255, 0.1);
+      }
+      51% {
+        border-color: rgba(255, 255, 255, 0.03);
+      }
+      76% {
+        border-color: rgba(174, 106, 255, 0.25);
+      }
+    }
+
+    @keyframes singularity-black-hole-breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.018); }
+    }
+
+    @keyframes singularity-black-hole-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes singularity-ring-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes live-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(0.8); }
+    }
+
+
+    @keyframes surge-pill-pulse {
+      0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 240, 196, 0.1), 0 0 18px rgba(255, 96, 0, 0.16); }
+      50% { box-shadow: inset 0 1px 0 rgba(255, 240, 196, 0.12), 0 0 30px rgba(255, 112, 0, 0.3); }
+    }
+
+    @keyframes solar-frame-pulse {
+      0% { opacity: 0.72; }
+      100% { opacity: 1; }
+    }
+
+    @keyframes fire-flicker {
+      0% { opacity: 0.62; }
+      45% { opacity: 0.82; }
+      100% { opacity: 0.96; }
+    }
+
+    @keyframes fire-frame-flicker {
+      0% { opacity: 0.78; }
+      48% { opacity: 0.96; }
+      100% { opacity: 0.88; }
+    }
+
+    @keyframes fire-secondary {
+      0% { opacity: 0.24; }
+      100% { opacity: 0.55; }
+    }
+
+    @keyframes flame-lick-dance {
+      0% { scale: 0.9 1; opacity: 0.34; }
+      52% { scale: 1.03 1.07; opacity: 0.76; }
+      100% { scale: 1.08 1.16; opacity: 0.5; }
+    }
+
+    @keyframes flame-dance {
+      0% { scale: 1 1; opacity: 0.66; }
+      100% { scale: 1.015 1.09; opacity: 0.9; }
+    }
+
+    @keyframes ember-rise {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.45);
+      }
+      14% { opacity: 1; }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -160px))) scale(0.1);
+      }
+    }
+
+    @keyframes halo-breathe {
+      0%, 100% { transform: scale(0.96); opacity: 0.76; }
+      50% { transform: scale(1.06); opacity: 1; }
+    }
+
+    @keyframes orbit-spin {
+      to { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    @keyframes core-float {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 0 -9px; }
+    }
+
+    @keyframes surface-drift {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes balance-bump {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.035); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes particle-burst {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.45);
+      }
+      12% { opacity: 1; }
+      100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0);
+      }
+    }
+
+    @keyframes float-up {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -30%) scale(0.8);
+      }
+      18% {
+        opacity: 1;
+        transform: translate(-50%, -95%) scale(1.04);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -225%) scale(0.92);
+      }
+    }
+
+    @keyframes ripple-out {
+      0% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(0.35);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.8);
+      }
+    }
+
+    .game-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      width: 100%;
+      padding: 17px 4px 0;
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+    }
+
+    .game-footer a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+
+    .game-footer a:hover {
+      color: var(--text);
+    }
+
+    html[lang^="zh"] body {
+      font-family: "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", var(--font);
+    }
+
+    html[lang^="zh"] .eyebrow {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+    }
+
+    html[lang^="zh"] .u-name {
+      font-size: 13px;
+    }
+
+    html[lang^="zh"] .u-desc,
+    html[lang^="zh"] .shop-sub {
+      font-size: 10.5px;
+    }
+
+    html[lang^="zh"] .u-current,
+    html[lang^="zh"] .hint {
+      font-size: 10px;
+    }
+
+    html[lang^="zh"] .u-level {
+      letter-spacing: 0.04em;
+    }
+
+    html[lang^="zh"] .u-cta,
+    html[lang^="zh"] .stat-label {
+      letter-spacing: 0.06em;
+    }
+
+    html[lang^="zh"] .rank-pill {
+      letter-spacing: 0.05em;
+    }
+
+    html[lang^="zh"] .shop-badge {
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 1050px) {
+      .layout {
+        grid-template-columns: minmax(0, 1.05fr) minmax(350px, 0.95fr);
+      }
+
+      .play-panel {
+        padding-inline: 24px;
+      }
+
+      .side-panel {
+        padding-inline: 20px;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        width: min(720px, 100%);
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .play-panel,
+      .side-panel {
+        min-height: 0;
+      }
+
+      .play-panel {
+        padding-bottom: 24px;
+      }
+
+      .core-stage {
+        min-height: 380px;
+      }
+
+      .side-panel {
+        gap: 13px;
+      }
+
+      .rank-card {
+        margin-top: 2px;
+      }
+
+      .stats-grid {
+        margin-top: 0;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .app {
+        padding: 8px 12px 18px;
+      }
+
+      .topbar {
+        height: 76px;
+      }
+
+      .brand {
+        gap: 9px;
+      }
+
+      .brand-mark {
+        width: 37px;
+        height: 37px;
+        border-radius: 12px;
+      }
+
+      .brand-mark svg {
+        width: 27px;
+        height: 27px;
+      }
+
+      .brand-title {
+        font-size: 12px;
+        letter-spacing: 0.14em;
+      }
+
+      .brand-sub {
+        font-size: 7px;
+        letter-spacing: 0.24em;
+      }
+
+      .autosave {
+        display: none;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .icon-btn {
+        width: 37px;
+        height: 37px;
+      }
+
+      .lang-switch {
+        padding: 2px;
+      }
+
+      .lang-switch button {
+        min-width: 27px;
+        height: 24px;
+        padding-inline: 5px;
+        font-size: 7.5px;
+      }
+
+      .game-footer {
+        flex-direction: column;
+        gap: 6px;
+        padding-top: 15px;
+        font-size: 8.5px;
+        text-align: center;
+      }
+
+      .singularity-hud {
+        gap: 7px;
+        height: 31px;
+        padding-inline: 11px;
+      }
+
+      .singularity-hud-track {
+        width: 44px;
+      }
+
+      .singularity-mult {
+        padding-left: 6px;
+        font-size: 8px;
+      }
+
+      .panel {
+        border-radius: 22px;
+      }
+
+      .play-panel {
+        padding: 20px 16px 22px;
+      }
+
+      .balance-block {
+        margin-top: 18px;
+      }
+
+      .balance {
+        font-size: clamp(52px, 17vw, 72px);
+      }
+
+      .rank-pill {
+        font-size: 7.5px;
+        letter-spacing: 0.1em;
+      }
+
+      .rank-pill strong {
+        max-width: 94px;
+      }
+
+      .core-stage {
+        min-height: 320px;
+        margin-block: 0;
+      }
+
+      .core {
+        width: clamp(184px, 56vw, 226px);
+      }
+
+      .core-halo {
+        width: min(82vw, 360px);
+      }
+
+      .orbit--dashed {
+        width: min(88vw, 326px);
+      }
+
+      .orbit--wide {
+        width: 100%;
+        height: 160px;
+      }
+
+      .orbit--narrow {
+        width: 94%;
+        height: 138px;
+      }
+
+      .hint {
+        margin-top: 15px;
+        font-size: 9.5px;
+      }
+
+      .hint-desktop {
+        display: none;
+      }
+
+      .side-panel {
+        padding: 20px 15px 17px;
+      }
+
+      .shop-head h2 {
+        font-size: 21px;
+      }
+
+      .shop-badge {
+        display: none;
+      }
+
+      .upgrade {
+        grid-template-columns: 42px minmax(0, 1fr) auto;
+        gap: 10px;
+        padding: 11px;
+      }
+
+      .u-icon {
+        width: 42px;
+        height: 42px;
+      }
+
+      .u-name {
+        font-size: 12px;
+      }
+
+      .u-desc {
+        font-size: 9.5px;
+      }
+
+      .u-current {
+        font-size: 8px;
+      }
+
+      .u-cost {
+        font-size: 11px;
+      }
+
+      .u-buy {
+        min-width: 52px;
+      }
+
+  
+      .toast {
+        bottom: 16px;
+      }
+    }
+
+    @media (max-width: 385px) {
+      .brand-sub {
+        display: none;
+      }
+
+      .resource-head {
+        gap: 8px;
+      }
+
+      .resource-head .eyebrow {
+        white-space: nowrap;
+      }
+
+      .rank-pill {
+        display: none;
+      }
+
+      .singularity-hud-label {
+        display: none;
+      }
+
+      .u-desc {
+        white-space: normal;
+      }
+
+      .upgrade {
+        align-items: start;
+      }
+
+      .u-icon {
+        margin-top: 1px;
+      }
+    }
+
+    @media (max-height: 740px) and (min-width: 901px) {
+      .topbar {
+        height: 76px;
+      }
+
+      .play-panel,
+      .side-panel {
+        min-height: 620px;
+      }
+
+      .core-stage {
+        min-height: 300px;
+      }
+
+      .core {
+        width: 220px;
+      }
+
+      .shop-list {
+        gap: 7px;
+      }
+
+      .upgrade {
+        padding-block: 9px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+
+      .core {
+        animation: none;
+      }
+
+      .core-halo,
+      .live-dot,
+      .orbit--dashed,
+      .core::before,
+      .core-surface::after {
+        animation: none !important;
+      }
+
+      .singularity-message.is-opening span {
+        opacity: 1;
+        animation: none !important;
+      }
+
+      .singularity-message.is-closing span {
+        opacity: 1;
+        animation: none !important;
+      }
+
+      .singularity-chaos {
+        opacity: 0.92;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="starfield" aria-hidden="true"></canvas>
+  <div class="aurora aurora--mint" aria-hidden="true"></div>
+  <div class="aurora aurora--violet" aria-hidden="true"></div>
+
+  <div class="app">
+    <div class="singularity-hud" id="singularityHud" aria-label="Singularity charge">
+      <span class="singularity-orb" aria-hidden="true"></span>
+      <span class="singularity-hud-label" data-i18n="singularity">Singularity</span>
+      <span class="singularity-hud-track" aria-hidden="true"><span id="singularityFill"></span></span>
+      <span class="singularity-hud-count"><span id="singularityCount">000</span><span class="singularity-hud-total">/ 500</span></span>
+      <span class="singularity-mult" id="singularityMult" hidden>×10 <span id="singularityTimer">30.0s</span></span>
+    </div>
+
+    <header class="topbar">
+      <a class="brand" href="index.html?lang=en" data-site-link data-i18n-title="backToSite" data-i18n-aria="backToSite" aria-label="Back to the project site">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none">
+            <defs>
+              <radialGradient id="brand-core" cx="32%" cy="25%" r="75%">
+                <stop offset="0" stop-color="#e6fff7"/>
+                <stop offset="0.45" stop-color="#7af7c8"/>
+                <stop offset="1" stop-color="#2b8d82"/>
+              </radialGradient>
+            </defs>
+            <circle cx="16" cy="16" r="6.2" fill="url(#brand-core)"/>
+            <ellipse cx="16" cy="16" rx="13" ry="5.2" transform="rotate(-28 16 16)" stroke="#9282ff" stroke-width="1.1" opacity="0.85"/>
+            <circle cx="27" cy="9.5" r="1.6" fill="#ffd27d"/>
+          </svg>
+        </div>
+        <div class="brand-copy">
+          <span class="brand-title">ORBIT CLICKER</span>
+          <span class="brand-sub" data-i18n="brandSub">A tiny cosmic idle experiment</span>
+        </div>
+      </a>
+
+      <div class="header-actions">
+        <div class="autosave" id="autosaveStatus" title="Your progress saves automatically in this browser.">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="autosaveLabel">AUTOSAVE</span>
+        </div>
+        <div class="lang-switch" role="group" aria-label="Language" data-i18n-aria="languageLabel">
+          <button type="button" data-lang="en" lang="en" aria-label="English" aria-pressed="true">EN</button>
+          <button type="button" data-lang="zh" lang="zh-Hant" aria-label="Traditional Chinese" aria-pressed="false">繁中</button>
+        </div>
+        <button class="icon-btn icon-btn--danger" id="resetBtn" type="button" aria-label="Reset progress" title="Reset progress" data-i18n-aria="resetProgress" data-i18n-title="resetProgress">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 12a8.5 8.5 0 1 0 2.4-5.9"/>
+            <path d="M3.5 4v5h5"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel play-panel" aria-label="Stardust collector" data-i18n-aria="collectorAria">
+        <div class="resource-head">
+          <p class="eyebrow"><span class="live-dot" aria-hidden="true"></span><span data-i18n="stardustReserve">Stardust reserve</span></p>
+          <div class="rank-pill"><span data-i18n="rankWord">Rank</span> <strong id="rankPill">01 · Dust Mote</strong></div>
+        </div>
+
+        <div class="balance-block">
+          <output class="balance" id="balance" aria-label="Stardust balance" data-i18n-aria="stardustBalanceAria">0.0</output>
+          <div class="rate-row">
+            <span class="rate-pill rate-pill--mint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 3v18M7 8l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <strong id="rateValue">+0.0</strong>&nbsp;<span data-i18n="perSecond">/ sec</span>
+            </span>
+            <span class="rate-pill rate-pill--click" id="clickPill">
+              <svg id="clickStarIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2.5 14.2 9l6.3 3-6.3 3-2.2 6.5L9.8 15l-6.3-3 6.3-3L12 2.5Z"/>
+              </svg>
+              <svg id="surgeIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" hidden>
+                <path d="M13.6 1.8c.6 3.8-2.3 5.6-3.2 8.2-.7 2 .3 3.2 1.4 3.6-.1-2 .8-3.2 1.8-4.1.5 2.3 2.9 3.2 2.9 6.1a5.1 5.1 0 0 1-10.2.2c0-4.6 4.7-6.2 7.3-14Z"/>
+              </svg>
+              <strong id="clickValue">1.0</strong>&nbsp;<span data-i18n="perClick">/ click</span>
+              <span class="surge-timer" id="surgeTimer" hidden> · 10.0s</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="core-stage" id="coreStage">
+          <div class="core-halo" aria-hidden="true"></div>
+          <div class="orbit orbit--dashed" aria-hidden="true"></div>
+          <div class="orbit orbit--wide" aria-hidden="true"></div>
+          <div class="orbit orbit--narrow" aria-hidden="true"></div>
+
+          <button class="core" id="core" type="button" aria-label="Collect stardust from the core" aria-describedby="hint">
+            <span class="core-surface" id="coreSurface" aria-hidden="true">
+              <span class="core-star">
+                <svg viewBox="0 0 100 100" fill="none">
+                  <path d="M50 12c4.8 24.8 12.2 32.2 37 37-24.8 4.8-32.2 12.2-37 37-4.8-24.8-12.2-32.2-37-37 24.8-4.8 32.2-12.2 37-37Z" fill="rgba(5, 35, 35, 0.42)"/>
+                  <path d="M50 21c3.8 19.6 9.7 25.5 29.3 29.3C59.7 54.1 53.8 60 50 79.6c-3.8-19.6-9.7-25.5-29.3-29.3C40.3 46.5 46.2 40.6 50 21Z" stroke="rgba(226, 255, 247, 0.24)" stroke-width="0.8"/>
+                </svg>
+              </span>
+              <span class="core-label" id="coreLabel" data-i18n="tapToCollect">Tap to collect</span>
+            </span>
+          </button>
+
+          <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+        </div>
+
+        <div class="combo-wrap" aria-hidden="true">
+          <div class="combo-meta">
+            <span data-i18n="clickChain">Click chain</span>
+            <span class="combo-value" id="comboValue">×1.00</span>
+          </div>
+          <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
+        </div>
+
+        <p class="hint" id="hint">
+          <span data-i18n="hintTap">Tap the core</span>
+          <span class="hint-sep hint-desktop" aria-hidden="true"></span>
+          <span class="hint-desktop"><span data-i18n="hintOrPress">or press</span> <kbd>SPACE</kbd></span>
+          <span class="hint-sep" aria-hidden="true"></span>
+          <span data-i18n="hintChain">chain clicks for up to ×1.5</span>
+        </p>
+      </section>
+
+      <aside class="panel side-panel" aria-label="Upgrade workshop" data-i18n-aria="workshopAria">
+        <div class="shop-head">
+          <div>
+            <p class="eyebrow" data-i18n="workshop">Workshop</p>
+            <h2 data-i18n="upgrades">Upgrades</h2>
+            <p class="shop-sub" data-i18n="upgradesSub">Spend stardust. Make the void work for you.</p>
+          </div>
+          <span class="shop-badge" id="moduleCount">5 MODULES</span>
+        </div>
+
+        <div class="shop-list" id="shopList"></div>
+
+        <div class="rank-card">
+          <div class="rank-top">
+            <p class="eyebrow"><span data-i18n="rankWord">Rank</span> <span id="rankNumber">01</span></p>
+            <span class="rank-next" id="rankNext">Next at 100</span>
+          </div>
+          <div class="rank-heading">
+            <strong class="rank-name" id="rankName">Dust Mote</strong>
+            <span class="rank-pct" id="rankPct">0%</span>
+          </div>
+          <div class="rank-track"><div class="rank-fill" id="rankFill"></div></div>
+        </div>
+
+        <div class="stats-grid" aria-label="Lifetime statistics" data-i18n-aria="statsAria">
+          <div class="stat">
+            <span class="stat-label" data-i18n="statsClicks">Clicks</span>
+            <strong id="statClicks">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label" data-i18n="statsLifetime">Lifetime</span>
+            <strong id="statLifetime">0</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label" data-i18n="statsBest">Best hit</span>
+            <strong id="statBest">0</strong>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="game-footer">
+      <a href="index.html?lang=en" data-site-link data-i18n="backToSite">← Back to the project site</a>
+      <span>3E Hau Wing Hei Hayson</span>
+    </footer>
+  </div>
+
+
+  <div class="solar-overlay" id="solarOverlay" aria-hidden="true">
+    <div class="solar-frame"></div>
+    <div class="solar-edge solar-edge--bottom"></div>
+    <div class="solar-edge solar-edge--top"></div>
+    <div class="solar-edge solar-edge--left"></div>
+    <div class="solar-edge solar-edge--right"></div>
+    <div class="solar-licks" id="solarLicks"></div>
+    <svg class="solar-fire-svg" viewBox="0 0 1440 940" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="solarStrokeGradient" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#fff3b0"/>
+          <stop offset="0.18" stop-color="#ffd166"/>
+          <stop offset="0.48" stop-color="#ff8a00"/>
+          <stop offset="0.8" stop-color="#ff3d00"/>
+          <stop offset="1" stop-color="#c91700"/>
+        </linearGradient>
+        <linearGradient id="solarStrokeGradientSecondary" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ff5a00"/>
+          <stop offset="0.45" stop-color="#ffb52e"/>
+          <stop offset="0.75" stop-color="#ff6a00"/>
+          <stop offset="1" stop-color="#ffd86f"/>
+        </linearGradient>
+        <filter id="solarEdgeWarp" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.008 0.022" numOctaves="3" seed="8" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="38" xChannelSelector="R" yChannelSelector="G"/>
+          <feGaussianBlur stdDeviation="2.5"/>
+        </filter>
+        <filter id="solarEdgeWarpSecondary" x="-8%" y="-8%" width="116%" height="116%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.011 0.018" numOctaves="2" seed="19" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="30" xChannelSelector="R" yChannelSelector="G"/>
+          <feGaussianBlur stdDeviation="5"/>
+        </filter>
+        <filter id="solarEdgeGlow">
+          <feGaussianBlur stdDeviation="18"/>
+        </filter>
+      </defs>
+      <rect x="-32" y="-32" width="1504" height="1004" fill="none" stroke="#ff4b00" stroke-width="48" opacity="0.52" filter="url(#solarEdgeGlow)" vector-effect="non-scaling-stroke"/>
+      <rect class="fire-layer-secondary" x="-24" y="-24" width="1488" height="988" fill="none" stroke="url(#solarStrokeGradientSecondary)" stroke-width="42" opacity="0.4" filter="url(#solarEdgeWarpSecondary)" vector-effect="non-scaling-stroke"/>
+      <rect x="-20" y="-20" width="1480" height="980" fill="none" stroke="url(#solarStrokeGradient)" stroke-width="34" opacity="0.96" filter="url(#solarEdgeWarp)" vector-effect="non-scaling-stroke"/>
+      <rect x="-24" y="-24" width="1488" height="988" fill="none" stroke="#fff1ac" stroke-width="4.5" opacity="0.62" filter="url(#solarEdgeWarp)" vector-effect="non-scaling-stroke"/>
+    </svg>
+    <div class="solar-embers" id="solarEmbers"></div>
+  </div>
+
+
+  <div class="singularity-chaos" id="singularityChaos" hidden aria-hidden="true"></div>
+  <div class="singularity-curtain" id="singularityCurtain" hidden aria-hidden="true"></div>
+  <div class="singularity-message" id="singularityMessage" role="status" aria-live="assertive" hidden><span id="singularityMessageText"></span></div>
+  <div class="singularity-flash" id="singularityFlash" hidden aria-hidden="true"></div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="resetDialog" aria-labelledby="resetTitle">
+    <form method="dialog" class="dialog-inner">
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3.5 12a8.5 8.5 0 1 0 2.4-5.9"/>
+          <path d="M3.5 4v5h5"/>
+        </svg>
+      </div>
+      <h2 id="resetTitle" data-i18n="resetTitle">Restart the universe?</h2>
+      <p data-i18n="resetBody">This clears your stardust, upgrades, ranks, singularity charge, and lifetime stats from this browser. There is no undo.</p>
+      <div class="dialog-actions">
+        <button class="btn" value="cancel" type="submit" data-i18n="keepPlaying">Keep playing</button>
+        <button class="btn btn--danger" id="confirmReset" value="confirm" type="button" data-i18n="resetEverything">Reset everything</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    "use strict";
+
+    /* ---------------------------------------------------------------------
+       Configuration
+    --------------------------------------------------------------------- */
+
+    const STORAGE_KEY = "orbit-clicker-save-v1";
+    const SAVE_INTERVAL = 5000;
+    const OFFLINE_CAP_SECONDS = 4 * 60 * 60;
+    const COMBO_WINDOW = 1250;
+    const MAX_COMBO = 25;
+    const COMBO_STEP = 0.02;
+    const SOLAR_SURGE_CHANCE = 1 / 200;
+    const SOLAR_SURGE_CHANCE_PER_LEVEL = 0.005;
+    const SOLAR_SURGE_MULTIPLIER = 3.5;
+    const SOLAR_SURGE_DURATION = 10000;
+    const SINGULARITY_CLICKS_REQUIRED = 500;
+    const SINGULARITY_DURATION = 30000;
+    const SINGULARITY_MULTIPLIER = 10;
+
+
+    const LOCALE_KEY = "orbit-clicker-locale";
+
+    const MESSAGES = {
+      en: {
+        pageTitle: "Orbit Clicker — A cosmic clicker game",
+        metaDescription: "Orbit Clicker is a free, silent browser clicker game. Tap the core, build stardust, survive rare solar surges, and open the singularity.",
+        brandSub: "A tiny cosmic idle experiment",
+        autosave: "AUTOSAVE",
+        autosaveTitle: "Your progress saves automatically in this browser.",
+        sessionOnly: "SESSION ONLY",
+        sessionOnlyTitle: "Local storage is unavailable, so progress only lasts this session.",
+        singularity: "Singularity",
+        stardustReserve: "Stardust reserve",
+        stardustBalanceAria: "Stardust balance",
+        rankWord: "Rank",
+        perSecond: "/ sec",
+        perClick: "/ click",
+        collectorAria: "Stardust collector",
+        workshopAria: "Upgrade workshop",
+        statsAria: "Lifetime statistics",
+        tapToCollect: "Tap to collect",
+        coreTapAria: "Collect stardust from the core",
+        clickChain: "Click chain",
+        hintTap: "Tap the core",
+        hintOrPress: "or press",
+        hintChain: "chain clicks for up to ×1.5",
+        workshop: "Workshop",
+        upgrades: "Upgrades",
+        upgradesSub: "Spend stardust. Make the void work for you.",
+        modules: "{count} modules",
+        rankNext: "{amount} to {rank}",
+        rankMax: "Maximum rank reached",
+        resetProgress: "Reset progress",
+        resetTitle: "Restart the universe?",
+        resetBody: "This clears your stardust, upgrades, ranks, singularity charge, and lifetime stats from this browser. There is no undo.",
+        keepPlaying: "Keep playing",
+        resetEverything: "Reset everything",
+        backToSite: "Back to the project site",
+        languageLabel: "Language",
+        english: "English",
+        chinese: "Traditional Chinese",
+        buy: "Buy",
+        complete: "Complete",
+        level: "LV",
+        max: "MAX",
+        statsClicks: "Clicks",
+        statsLifetime: "Lifetime",
+        statsBest: "Best hit",
+        upgradeAriaBuy: "Buy {name} for {cost} stardust. Level {level}. {desc}",
+        upgradeAriaMax: "{name}, fully upgraded at level {level}",
+        upgradeCapacitorName: "Click Capacitor",
+        upgradeCapacitorDesc: "Adds +1 base power to every click.",
+        statBaseClick: "Base click: {value}",
+        upgradeDroneName: "Orbital Drone",
+        upgradeDroneDesc: "Collects +1 stardust per second.",
+        statAuto: "Auto: {value} / sec",
+        upgradeLensName: "Quantum Lens",
+        upgradeLensDesc: "Adds +3% chance for critical clicks.",
+        statCritChance: "Crit chance: {value}%",
+        upgradeSurgeName: "Solar Surge Chance",
+        upgradeSurgeDesc: "Adds +0.5% surge chance per level.",
+        statSurgeChance: "Surge chance: {value}% · 1 in {oneIn}",
+        upgradeFlareName: "Solar Flare",
+        upgradeFlareDesc: "Critical hits deal +0.5× more.",
+        statCritBonus: "Crit bonus: ×{value}",
+        rankDust: "Dust Mote",
+        rankStar: "Star Gazer",
+        rankComet: "Comet Chaser",
+        rankNebula: "Nebula Smith",
+        rankGalaxy: "Galaxy Weaver",
+        rankCosmic: "Cosmic Architect",
+        coreSurgeLabel: "SOLAR SURGE · {seconds}s",
+        coreSingLabel: "SINGULARITY · {seconds}s",
+        coreSurgeAria: "Collect stardust from the core. Solar surge active: 3.5 times click power.",
+        coreSingAria: "Collect stardust from the singularity. Click power is multiplied by 10.",
+        hudChargeAria: "Singularity charge: {count} of 500.",
+        hudActiveAria: "Singularity active. Clicks are multiplied by {mult}. {seconds} seconds remaining.",
+        singularityOpened: "the singularity has opened.",
+        singularityClosed: "the singularity has closed.",
+        toastNeedStardust: "Need {amount} more stardust.",
+        toastUpgrade: "{name} upgraded to level {level}.",
+        toastUpgradeMax: "{name} fully upgraded.",
+        toastRankUp: "Rank up · {rank}",
+        toastOffline: "Your drones gathered {amount} stardust while you were away.",
+        toastWelcome: "Welcome back · your drones gathered {amount} stardust.",
+        toastFresh: "A fresh universe awaits.",
+        toastStorage: "Local storage is unavailable — progress will only last this session.",
+        toastSolarSurge: "SOLAR SURGE · every click is ×3.5 for 10s."
+      },
+      zh: {
+        pageTitle: "Orbit Clicker — 宇宙點擊遊戲",
+        metaDescription: "Orbit Clicker 是一款免費、靜音的宇宙點擊遊戲。點擊核心、累積星塵、經歷太陽風暴，並在 500 次點擊後開啟奇點。",
+        brandSub: "一場微小的宇宙放置實驗",
+        autosave: "自動儲存",
+        autosaveTitle: "進度會自動儲存在此瀏覽器。",
+        sessionOnly: "僅限本次",
+        sessionOnlyTitle: "本機儲存無法使用，進度只會保留到本次工作階段。",
+        singularity: "奇點",
+        stardustReserve: "星塵存量",
+        stardustBalanceAria: "星塵餘額",
+        rankWord: "階級",
+        perSecond: "/ 秒",
+        perClick: "/ 次",
+        collectorAria: "星塵收集區",
+        workshopAria: "升級工坊",
+        statsAria: "累積統計",
+        tapToCollect: "點擊收集",
+        coreTapAria: "從核心收集星塵",
+        clickChain: "點擊連擊",
+        hintTap: "點擊核心",
+        hintOrPress: "或按",
+        hintChain: "連續點擊最高可達 ×1.5",
+        workshop: "工坊",
+        upgrades: "升級",
+        upgradesSub: "消耗星塵，讓虛空為你效力。",
+        modules: "{count} 個模組",
+        rankNext: "距離{rank}還差 {amount}",
+        rankMax: "已達最高階級",
+        resetProgress: "重設進度",
+        resetTitle: "重新開始宇宙？",
+        resetBody: "這會清除此瀏覽器中的星塵、升級、階級、奇點充能與累積統計，且無法復原。",
+        keepPlaying: "繼續遊玩",
+        resetEverything: "全部重設",
+        backToSite: "返回專案網站",
+        languageLabel: "語言",
+        english: "英文",
+        chinese: "繁體中文",
+        buy: "購買",
+        complete: "完成",
+        level: "等級",
+        max: "滿級",
+        statsClicks: "點擊次數",
+        statsLifetime: "累積收益",
+        statsBest: "最高單擊",
+        upgradeAriaBuy: "以 {cost} 星塵購買{name}。目前等級 {level}。{desc}",
+        upgradeAriaMax: "{name}，已達等級 {level} 滿級",
+        upgradeCapacitorName: "點擊電容",
+        upgradeCapacitorDesc: "每次點擊的基礎威力 +1。",
+        statBaseClick: "基礎點擊：{value}",
+        upgradeDroneName: "軌道無人機",
+        upgradeDroneDesc: "每秒自動收集 +1 星塵。",
+        statAuto: "自動：{value} / 秒",
+        upgradeLensName: "量子透鏡",
+        upgradeLensDesc: "爆擊機率 +3%。",
+        statCritChance: "爆擊機率：{value}%",
+        upgradeSurgeName: "太陽風暴機率",
+        upgradeSurgeDesc: "每級增加 0.5% 太陽風暴機率。",
+        statSurgeChance: "太陽風暴機率：{value}% · 每 {oneIn} 次 1 次",
+        upgradeFlareName: "太陽閃焰",
+        upgradeFlareDesc: "爆擊傷害 +0.5×。",
+        statCritBonus: "爆擊倍率：×{value}",
+        rankDust: "星塵微粒",
+        rankStar: "觀星者",
+        rankComet: "追彗者",
+        rankNebula: "星雲工匠",
+        rankGalaxy: "星系編織者",
+        rankCosmic: "宇宙建築師",
+        coreSurgeLabel: "太陽風暴 · {seconds} 秒",
+        coreSingLabel: "奇點 · {seconds} 秒",
+        coreSurgeAria: "從核心收集星塵。太陽風暴啟動中：點擊威力 ×3.5。",
+        coreSingAria: "從奇點收集星塵。點擊威力 ×10。",
+        hudChargeAria: "奇點充能：{count} / 500。",
+        hudActiveAria: "奇點啟動中。點擊倍率 ×{mult}，剩餘 {seconds} 秒。",
+        singularityOpened: "奇點已經開啟。",
+        singularityClosed: "奇點已經關閉。",
+        toastNeedStardust: "還需要 {amount} 星塵。",
+        toastUpgrade: "{name} 已升級至等級 {level}。",
+        toastUpgradeMax: "{name} 已完全升級。",
+        toastRankUp: "階級提升 · {rank}",
+        toastOffline: "你離開期間，無人機收集了 {amount} 星塵。",
+        toastWelcome: "歡迎回來 · 無人機為你收集了 {amount} 星塵。",
+        toastFresh: "全新的宇宙等著你。",
+        toastStorage: "本機儲存無法使用——進度只會保留到本次工作階段。",
+        toastSolarSurge: "太陽風暴 · 10 秒內每次點擊 ×3.5。"
+      }
+    };
+
+    function normalizeLocale(value) {
+      return String(value || "").toLowerCase().startsWith("zh") ? "zh" : "en";
+    }
+
+    function detectLocale() {
+      try {
+        const fromUrl = new URLSearchParams(window.location.search).get("lang");
+        if (fromUrl) return normalizeLocale(fromUrl);
+      } catch (error) {
+        /* Ignore malformed URLs. */
+      }
+
+      try {
+        const stored = localStorage.getItem(LOCALE_KEY);
+        if (stored) return normalizeLocale(stored);
+      } catch (error) {
+        /* Storage can be unavailable. */
+      }
+
+      const browserLanguage = (navigator.languages && navigator.languages[0]) || navigator.language || "en";
+      return normalizeLocale(browserLanguage);
+    }
+
+    let locale = detectLocale();
+
+    function t(key, vars = {}) {
+      const dictionary = MESSAGES[locale] || MESSAGES.en;
+      const template = dictionary[key] ?? MESSAGES.en[key] ?? key;
+      return template.replace(/\{(\w+)\}/g, (match, name) => (
+        Object.prototype.hasOwnProperty.call(vars, name) ? String(vars[name]) : match
+      ));
+    }
+
+    const RANKS = [
+      { at: 0, nameKey: "rankDust" },
+      { at: 100, nameKey: "rankStar" },
+      { at: 1000, nameKey: "rankComet" },
+      { at: 10000, nameKey: "rankNebula" },
+      { at: 100000, nameKey: "rankGalaxy" },
+      { at: 1000000, nameKey: "rankCosmic" }
+    ];
+
+    const ICONS = {
+      capacitor: `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13 2 5 14h6l-1 8 8-12h-6l1-8Z"/>
+        </svg>`,
+      drone: `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/>
+          <ellipse cx="12" cy="12" rx="9.2" ry="4.1" transform="rotate(-28 12 12)"/>
+          <ellipse cx="12" cy="12" rx="9.2" ry="4.1" transform="rotate(28 12 12)" opacity=".55"/>
+        </svg>`,
+      lens: `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="6.5"/>
+          <circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/>
+          <path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>
+        </svg>`,
+      flare: `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 1.8v3.1M12 19.1v3.1M1.8 12h3.1M19.1 12h3.1M4.8 4.8l2.2 2.2M17 17l2.2 2.2M19.2 4.8 17 7M7 17l-2.2 2.2"/>
+        </svg>`,
+      surge: `
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M13.6 2.2c.5 3.4-2.3 5.2-3.2 7.8-.6 1.8.2 3 1.3 3.4 0-1.9.8-3.2 1.8-4.1.5 2.3 2.9 3.2 2.9 6.1a5.2 5.2 0 0 1-10.4.1c0-4.3 4.6-5.9 7.6-13.3Z"/>
+          <path d="M20.5 4.2 22 5.7M2.5 4.2 1 5.7M20.5 18.2 22 16.7M2.5 18.2 1 16.7" opacity=".7"/>
+        </svg>`
+    };
+
+    const UPGRADES = [
+      {
+        id: "capacitor",
+        nameKey: "upgradeCapacitorName",
+        descKey: "upgradeCapacitorDesc",
+        tip: "click",
+        icon: ICONS.capacitor,
+        iconTone: "",
+        baseCost: 20,
+        growth: 1.5,
+        max: Infinity,
+        stat(level) {
+          return t("statBaseClick", { value: formatRate(1 + level) });
+        }
+      },
+      {
+        id: "drone",
+        nameKey: "upgradeDroneName",
+        descKey: "upgradeDroneDesc",
+        tip: "auto",
+        icon: ICONS.drone,
+        iconTone: "u-icon--violet",
+        baseCost: 60,
+        growth: 1.55,
+        max: 40,
+        stat(level) {
+          return t("statAuto", { value: formatRate(level) });
+        }
+      },
+      {
+        id: "lens",
+        nameKey: "upgradeLensName",
+        descKey: "upgradeLensDesc",
+        tip: "crit",
+        icon: ICONS.lens,
+        iconTone: "",
+        baseCost: 250,
+        growth: 1.78,
+        max: 15,
+        stat(level) {
+          return t("statCritChance", { value: Math.round((0.05 + level * 0.03) * 100) });
+        }
+      },
+      {
+        id: "surge",
+        nameKey: "upgradeSurgeName",
+        descKey: "upgradeSurgeDesc",
+        tip: "surge",
+        icon: ICONS.surge,
+        iconTone: "u-icon--ember",
+        baseCost: 450,
+        growth: 1.8,
+        max: 99,
+        stat(level) {
+          const chance = (SOLAR_SURGE_CHANCE + level * SOLAR_SURGE_CHANCE_PER_LEVEL) * 100;
+          const oneIn = Math.max(1, Math.round(100 / chance));
+          return t("statSurgeChance", { value: chance.toFixed(1), oneIn });
+        }
+      },
+      {
+        id: "flare",
+        nameKey: "upgradeFlareName",
+        descKey: "upgradeFlareDesc",
+        tip: "crit",
+        icon: ICONS.flare,
+        iconTone: "u-icon--gold",
+        baseCost: 600,
+        growth: 2.0,
+        max: 8,
+        stat(level) {
+          return t("statCritBonus", { value: (2 + level * 0.5).toFixed(1) });
+        }
+      }
+    ];
+
+    const COST_ICON = `
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 1.8 14.5 8.9 21.6 11.4 14.5 13.9 12 21 9.5 13.9 2.4 11.4 9.5 8.9 12 1.8Z"/>
+      </svg>`;
+
+    /* ---------------------------------------------------------------------
+       Utilities
+    --------------------------------------------------------------------- */
+
+    const $ = (id) => document.getElementById(id);
+
+    const numberFormats = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function trimZeros(value) {
+      return value.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+    }
+
+    function formatNumber(value, decimals = 0) {
+      if (!Number.isFinite(value)) return "∞";
+      const n = Math.max(0, value);
+      if (n < 1000) {
+        return n.toLocaleString("en-US", {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals
+        });
+      }
+
+      const UNITS = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"];
+      const tier = Math.min(Math.floor(Math.log10(n) / 3), UNITS.length - 1);
+      const scaled = n / Math.pow(1000, tier);
+      const precision = scaled < 10 ? 2 : scaled < 100 ? 1 : 0;
+      return trimZeros(scaled.toFixed(precision)) + UNITS[tier];
+    }
+
+    function formatEnergy(value) {
+      if (!Number.isFinite(value)) return "∞";
+      if (value < 1000) {
+        return value.toFixed(1);
+      }
+      return formatNumber(value);
+    }
+
+    function formatRate(value) {
+      if (!Number.isFinite(value)) return "∞";
+      if (value < 100) {
+        return value.toFixed(1);
+      }
+      if (value < 1000) {
+        return numberFormats.format(Math.floor(value));
+      }
+      return formatNumber(value);
+    }
+
+    function formatCost(value) {
+      return formatNumber(Math.ceil(value));
+    }
+
+    function formatHit(value) {
+      if (!Number.isFinite(value)) return "∞";
+      if (value < 100) return trimZeros(value.toFixed(1));
+      return formatNumber(value);
+    }
+
+    function pad2(value) {
+      return String(value).padStart(2, "0");
+    }
+
+    function prefersReducedMotion() {
+      return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    }
+
+    /* ---------------------------------------------------------------------
+       State
+    --------------------------------------------------------------------- */
+
+    let storageAvailable = true;
+    let state = null;
+    let combo = 0;
+    let lastClickAt = -Infinity;
+    let comboTimer = null;
+    let lastRankIndex = 0;
+    let lastTick = performance.now();
+    let hiddenAt = null;
+    let saveTimer = null;
+    let toastTimer = null;
+    let coreAnimation = null;
+    let lastBalanceValue = null;
+    let solarSurgeActive = false;
+    let solarSurgeEndsAt = 0;
+    let lastSurgeEmberAt = 0;
+    let singularityPhase = "idle";
+    let singularityChaosEndsAt = 0;
+    let singularityClickLocked = false;
+    let singularityTimers = [];
+
+    const cards = new Map();
+
+    function defaultLevels() {
+      return {
+        capacitor: 0,
+        drone: 0,
+        lens: 0,
+        surge: 0,
+        flare: 0
+      };
+    }
+
+    function createDefaultState() {
+      return {
+        version: 1,
+        energy: 0,
+        totalEarned: 0,
+        totalClicks: 0,
+        bestHit: 0,
+        levels: defaultLevels(),
+        singularityClicks: 0,
+        lastSeen: Date.now()
+      };
+    }
+
+    function upgradeCost(def, level = state.levels[def.id]) {
+      return Math.ceil(def.baseCost * Math.pow(def.growth, level));
+    }
+
+    function autoRateFor(targetState) {
+      return targetState.levels.drone * 1;
+    }
+
+    function autoRate() {
+      return autoRateFor(state);
+    }
+
+    function critChanceFor(targetState) {
+      return clamp(0.05 + targetState.levels.lens * 0.03, 0, 0.5);
+    }
+
+    function critChance() {
+      return critChanceFor(state);
+    }
+
+    function critMultiplierFor(targetState) {
+      return 2 + targetState.levels.flare * 0.5;
+    }
+
+    function critMultiplier() {
+      return critMultiplierFor(state);
+    }
+
+    function comboMultiplier() {
+      return 1 + combo * COMBO_STEP;
+    }
+
+    function solarSurgeChanceFor(targetState) {
+      return clamp(
+        SOLAR_SURGE_CHANCE + targetState.levels.surge * SOLAR_SURGE_CHANCE_PER_LEVEL,
+        0,
+        1
+      );
+    }
+
+    function solarSurgeChance() {
+      return solarSurgeChanceFor(state);
+    }
+
+    function clickValue() {
+      const surgeMultiplier = solarSurgeActive ? SOLAR_SURGE_MULTIPLIER : 1;
+      const singularityMultiplier = singularityPhase === "chaos" ? SINGULARITY_MULTIPLIER : 1;
+      return (1 + state.levels.capacitor) * comboMultiplier() * surgeMultiplier * singularityMultiplier;
+    }
+
+    function rankIndexForTotal(total) {
+      let index = 0;
+      for (let i = 0; i < RANKS.length; i += 1) {
+        if (total >= RANKS[i].at) index = i;
+      }
+      return index;
+    }
+
+    function getRankInfo() {
+      const index = rankIndexForTotal(state.totalEarned);
+      const current = RANKS[index];
+      const next = RANKS[index + 1] || null;
+      let progress = 1;
+      if (next) {
+        progress = clamp((state.totalEarned - current.at) / (next.at - current.at), 0, 1);
+      }
+      return { index, current, next, progress };
+    }
+
+    /* ---------------------------------------------------------------------
+       Persistence
+    --------------------------------------------------------------------- */
+
+    function normalizeLoadedState(raw) {
+      const fresh = createDefaultState();
+      if (!raw || typeof raw !== "object") return fresh;
+
+      const numericKeys = ["energy", "totalEarned", "totalClicks", "bestHit"];
+      numericKeys.forEach((key) => {
+        const value = Number(raw[key]);
+        if (Number.isFinite(value) && value >= 0) {
+          fresh[key] = value;
+        }
+      });
+
+      if (raw.levels && typeof raw.levels === "object") {
+        UPGRADES.forEach((def) => {
+          const value = Number(raw.levels[def.id]);
+          if (Number.isFinite(value) && value >= 0) {
+            fresh.levels[def.id] = Math.min(Math.floor(value), def.max);
+          }
+        });
+      }
+
+      const savedSingularityClicks = Number(raw.singularityClicks);
+      if (Number.isFinite(savedSingularityClicks) && savedSingularityClicks >= 0) {
+        fresh.singularityClicks = Math.min(
+          Math.floor(savedSingularityClicks),
+          SINGULARITY_CLICKS_REQUIRED - 1
+        );
+      }
+
+      return fresh;
+    }
+
+    function testStorage() {
+      try {
+        const key = "__orbit_test__";
+        localStorage.setItem(key, "1");
+        localStorage.removeItem(key);
+        return true;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function loadGame() {
+      storageAvailable = testStorage();
+      let loadedState = null;
+      let offlineEarned = 0;
+      let offlineSeconds = 0;
+
+      if (storageAvailable) {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            loadedState = normalizeLoadedState(parsed);
+            const lastSeen = Number(parsed.lastSeen);
+            if (Number.isFinite(lastSeen) && lastSeen > 0) {
+              offlineSeconds = clamp((Date.now() - lastSeen) / 1000, 0, OFFLINE_CAP_SECONDS);
+              offlineEarned = autoRateFor(loadedState) * offlineSeconds;
+              loadedState.energy += offlineEarned;
+              loadedState.totalEarned += offlineEarned;
+            }
+          }
+        } catch (error) {
+          loadedState = null;
+        }
+      }
+
+      state = loadedState || createDefaultState();
+      state.lastSeen = Date.now();
+      lastRankIndex = rankIndexForTotal(state.totalEarned);
+
+      updateStorageStatus(!storageAvailable);
+
+      return { offlineEarned, offlineSeconds };
+    }
+
+    function updateStorageStatus(warning = !storageAvailable) {
+      const status = $("autosaveStatus");
+      $("autosaveLabel").textContent = t(warning ? "sessionOnly" : "autosave");
+      status.title = t(warning ? "sessionOnlyTitle" : "autosaveTitle");
+      status.classList.toggle("is-warning", warning);
+    }
+
+    function saveGame() {
+      if (!storageAvailable) return;
+      try {
+        // While the tab is hidden, keep the last-visible timestamp so an
+        // interrupted session still earns offline stardust on its next load.
+        if (!document.hidden) {
+          state.lastSeen = Date.now();
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (error) {
+        storageAvailable = false;
+        updateStorageStatus(true);
+      }
+    }
+
+    function scheduleSave() {
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveGame, 350);
+    }
+
+    /* ---------------------------------------------------------------------
+       UI rendering
+    --------------------------------------------------------------------- */
+
+    const ui = {
+      app: document.querySelector(".app"),
+      balance: $("balance"),
+      rateValue: $("rateValue"),
+      clickValue: $("clickValue"),
+      clickPill: $("clickPill"),
+      clickStarIcon: $("clickStarIcon"),
+      surgeIcon: $("surgeIcon"),
+      surgeTimer: $("surgeTimer"),
+      coreLabel: $("coreLabel"),
+      solarOverlay: $("solarOverlay"),
+      solarEmbers: $("solarEmbers"),
+      solarLicks: $("solarLicks"),
+      singularityHud: $("singularityHud"),
+      singularityCount: $("singularityCount"),
+      singularityFill: $("singularityFill"),
+      singularityMult: $("singularityMult"),
+      singularityTimer: $("singularityTimer"),
+      singularityChaos: $("singularityChaos"),
+      singularityCurtain: $("singularityCurtain"),
+      singularityMessage: $("singularityMessage"),
+      singularityMessageText: $("singularityMessageText"),
+      singularityFlash: $("singularityFlash"),
+      moduleCount: $("moduleCount"),
+      comboValue: $("comboValue"),
+      comboFill: $("comboFill"),
+      core: $("core"),
+      coreStage: $("coreStage"),
+      coreSurface: $("coreSurface"),
+      fxLayer: $("fxLayer"),
+      shopList: $("shopList"),
+      rankPill: $("rankPill"),
+      rankNumber: $("rankNumber"),
+      rankName: $("rankName"),
+      rankNext: $("rankNext"),
+      rankPct: $("rankPct"),
+      rankFill: $("rankFill"),
+      statClicks: $("statClicks"),
+      statLifetime: $("statLifetime"),
+      statBest: $("statBest"),
+      toast: $("toast"),
+      resetDialog: $("resetDialog"),
+      metaDescription: $("metaDescription")
+    };
+
+    function renderShop() {
+      ui.moduleCount.textContent = t("modules", { count: UPGRADES.length });
+      ui.shopList.innerHTML = UPGRADES.map((def) => `
+        <button class="upgrade" type="button" data-upgrade="${def.id}">
+          <span class="u-icon ${def.iconTone}" aria-hidden="true">${def.icon}</span>
+          <span class="u-main">
+            <span class="u-row">
+              <span class="u-name">${t(def.nameKey)}</span>
+              <span class="u-level" data-level>${t("level")} 0</span>
+            </span>
+            <span class="u-desc">${t(def.descKey)}</span>
+            <span class="u-current" data-current></span>
+          </span>
+          <span class="u-buy">
+            <span class="u-cost">${COST_ICON}<span data-cost>0</span></span>
+            <span class="u-cta" data-cta>${t("buy")}</span>
+          </span>
+        </button>
+      `).join("");
+
+      cards.clear();
+      UPGRADES.forEach((def) => {
+        const card = ui.shopList.querySelector(`[data-upgrade="${def.id}"]`);
+        cards.set(def.id, {
+          card,
+          level: card.querySelector("[data-level]"),
+          cost: card.querySelector("[data-cost]"),
+          cta: card.querySelector("[data-cta]"),
+          current: card.querySelector("[data-current]")
+        });
+        card.addEventListener("click", () => buyUpgrade(def));
+      });
+
+      updateShop();
+    }
+
+    function updateShop() {
+      UPGRADES.forEach((def) => {
+        const ref = cards.get(def.id);
+        if (!ref) return;
+        const level = state.levels[def.id];
+        const maxed = level >= def.max;
+        const cost = upgradeCost(def);
+        const affordable = !maxed && state.energy >= cost;
+
+        ref.level.textContent = maxed ? t("max") : `${t("level")} ${level}`;
+        ref.cost.textContent = maxed ? "—" : formatCost(cost);
+        ref.cta.textContent = maxed ? t("complete") : t("buy");
+        ref.current.textContent = def.stat(level);
+        ref.card.classList.toggle("is-affordable", affordable);
+        ref.card.classList.toggle("is-maxed", maxed);
+        ref.card.disabled = maxed;
+        ref.card.setAttribute(
+          "aria-label",
+          maxed
+            ? t("upgradeAriaMax", { name: t(def.nameKey), level })
+            : t("upgradeAriaBuy", {
+              name: t(def.nameKey),
+              cost: formatCost(cost),
+              level,
+              desc: t(def.descKey)
+            })
+        );
+      });
+    }
+
+    function refreshAffordability() {
+      UPGRADES.forEach((def) => {
+        const ref = cards.get(def.id);
+        if (!ref) return;
+        const maxed = state.levels[def.id] >= def.max;
+        ref.card.classList.toggle(
+          "is-affordable",
+          !maxed && state.energy >= upgradeCost(def)
+        );
+      });
+    }
+
+    function updateBalance(force) {
+      const nextValue = formatEnergy(state.energy);
+      if (force || nextValue !== lastBalanceValue) {
+        ui.balance.textContent = nextValue;
+        lastBalanceValue = nextValue;
+      }
+      ui.rateValue.textContent = `+${formatRate(autoRate())}`;
+      ui.clickValue.textContent = formatRate(clickValue());
+    }
+
+    function updateCombo() {
+      const multiplier = comboMultiplier();
+      ui.comboValue.textContent = `×${multiplier.toFixed(2)}`;
+      ui.comboValue.classList.toggle("is-active", combo > 0);
+      ui.comboFill.style.width = `${(combo / MAX_COMBO) * 100}%`;
+    }
+
+    function updateRank() {
+      const info = getRankInfo();
+      const pct = info.next ? Math.min(99, Math.round(info.progress * 100)) : 100;
+      const currentName = t(info.current.nameKey);
+      const nextName = info.next ? t(info.next.nameKey) : null;
+      ui.rankPill.textContent = `${pad2(info.index + 1)} · ${currentName}`;
+      ui.rankNumber.textContent = pad2(info.index + 1);
+      ui.rankName.textContent = currentName;
+      ui.rankPct.textContent = `${pct}%`;
+      ui.rankFill.style.width = `${info.progress * 100}%`;
+      if (info.next) {
+        ui.rankNext.textContent = t("rankNext", {
+          amount: formatNumber(info.next.at),
+          rank: nextName
+        });
+      } else {
+        ui.rankNext.textContent = t("rankMax");
+      }
+    }
+
+    function updateStats() {
+      ui.statClicks.textContent = formatNumber(state.totalClicks);
+      ui.statLifetime.textContent = formatNumber(state.totalEarned);
+      ui.statBest.textContent = formatHit(state.bestHit);
+    }
+
+    function updateSingularityHud() {
+      const showingEvent = singularityPhase === "opening" || singularityPhase === "chaos";
+      const count = showingEvent ? SINGULARITY_CLICKS_REQUIRED : state.singularityClicks;
+      const progress = clamp(count / SINGULARITY_CLICKS_REQUIRED, 0, 1);
+
+      ui.singularityCount.textContent = String(Math.floor(count)).padStart(3, "0");
+      ui.singularityFill.style.width = `${progress * 100}%`;
+      ui.singularityHud.classList.toggle(
+        "is-charged",
+        singularityPhase === "idle" && state.singularityClicks >= 450
+      );
+      ui.singularityHud.classList.toggle(
+        "is-active",
+        singularityPhase === "opening" || singularityPhase === "chaos"
+      );
+      ui.singularityMult.hidden = singularityPhase !== "chaos";
+
+      if (singularityPhase === "chaos") {
+        const remaining = Math.max(0, singularityChaosEndsAt - performance.now());
+        ui.singularityTimer.textContent = `${(remaining / 1000).toFixed(1)}s`;
+        ui.singularityHud.setAttribute(
+          "aria-label",
+          t("hudActiveAria", {
+            mult: SINGULARITY_MULTIPLIER,
+            seconds: (remaining / 1000).toFixed(1)
+          })
+        );
+      } else {
+        ui.singularityHud.setAttribute(
+          "aria-label",
+          t("hudChargeAria", { count: Math.floor(count) })
+        );
+      }
+    }
+
+    function updateUI(forceBalance = false) {
+      updateBalance(forceBalance);
+      updateCombo();
+      refreshAffordability();
+      updateRank();
+      updateStats();
+      updateSingularityHud();
+    }
+
+    /* ---------------------------------------------------------------------
+       Feedback
+    --------------------------------------------------------------------- */
+
+    function showToast(message, kind = "default", duration = 2600) {
+      clearTimeout(toastTimer);
+      ui.toast.textContent = message;
+      ui.toast.classList.remove("is-gold", "is-warning");
+      if (kind === "gold") ui.toast.classList.add("is-gold");
+      if (kind === "warning") ui.toast.classList.add("is-warning");
+      ui.toast.classList.add("is-visible");
+      toastTimer = setTimeout(() => {
+        ui.toast.classList.remove("is-visible");
+      }, duration);
+    }
+
+    function bumpBalance() {
+      if (prefersReducedMotion()) return;
+      ui.balance.classList.remove("is-bumped");
+      void ui.balance.offsetWidth;
+      ui.balance.classList.add("is-bumped");
+    }
+
+    function animateCoreHit(isCrit) {
+      if (prefersReducedMotion()) return;
+      if (coreAnimation) coreAnimation.cancel();
+      const scale = isCrit ? 0.9 : 0.925;
+      coreAnimation = ui.coreSurface.animate(
+        [
+          { transform: "scale(1)" },
+          { transform: `scale(${scale})`, offset: 0.22 },
+          { transform: "scale(1.018)", offset: 0.62 },
+          { transform: "scale(1)" }
+        ],
+        {
+          duration: isCrit ? 340 : 250,
+          easing: "cubic-bezier(0.22, 0.85, 0.28, 1)"
+        }
+      );
+    }
+
+    function spawnBurst(x, y, isCrit) {
+      while (ui.fxLayer.childElementCount > 140) {
+        ui.fxLayer.firstElementChild.remove();
+      }
+
+      const singularityBurst = singularityPhase === "chaos";
+      const colors = singularityBurst
+        ? (isCrit
+          ? ["#ffffff", "#efd9ff", "#c995ff", "#9e5bff"]
+          : ["#e8ccff", "#c995ff", "#a966ff", "#ffffff"])
+        : (isCrit
+          ? ["#ffd27d", "#ffe7ae", "#7af7c8", "#ffb86b"]
+          : ["#7af7c8", "#a7ffe4", "#9282ff", "#c4bfff"]);
+      const count = isCrit ? 18 : 10;
+      const fragment = document.createDocumentFragment();
+
+      for (let i = 0; i < count; i += 1) {
+        const particle = document.createElement("span");
+        const angle = Math.random() * Math.PI * 2;
+        const distance = (isCrit ? 44 : 28) + Math.random() * (isCrit ? 92 : 62);
+        const size = (isCrit ? 3 : 2) + Math.random() * (isCrit ? 4.5 : 3.5);
+        particle.className = `particle${isCrit ? " is-crit" : ""}`;
+        particle.style.left = `${x}px`;
+        particle.style.top = `${y}px`;
+        particle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+        particle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+        particle.style.setProperty("--size", `${size.toFixed(1)}px`);
+        particle.style.setProperty("--color", colors[Math.floor(Math.random() * colors.length)]);
+        particle.style.animationDuration = `${(isCrit ? 0.62 : 0.5) + Math.random() * 0.36}s`;
+        particle.addEventListener("animationend", () => particle.remove(), { once: true });
+        fragment.appendChild(particle);
+      }
+
+      ui.fxLayer.appendChild(fragment);
+
+      const ripple = document.createElement("span");
+      ripple.className = `click-ripple${isCrit ? " is-crit" : ""}`;
+      ripple.style.left = `${x}px`;
+      ripple.style.top = `${y}px`;
+      ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+      ui.fxLayer.appendChild(ripple);
+
+      const text = document.createElement("span");
+      text.className = `float-text${isCrit ? " is-crit" : ""}`;
+      text.textContent = isCrit ? `+${formatRate(clickValue() * critMultiplier())} CRIT!` : `+${formatRate(clickValue())}`;
+      text.style.left = `${x + (Math.random() * 28 - 14)}px`;
+      text.style.top = `${y - 8}px`;
+      text.addEventListener("animationend", () => text.remove(), { once: true });
+      ui.fxLayer.appendChild(text);
+
+      if (isCrit && !prefersReducedMotion()) {
+        const halo = document.querySelector(".core-halo");
+        if (halo) {
+          halo.animate(
+            [
+              { transform: "scale(0.94)", opacity: 0.7 },
+              { transform: "scale(1.12)", opacity: 1 },
+              { transform: "scale(1)", opacity: 0.85 }
+            ],
+            { duration: 520, easing: "ease-out" }
+          );
+        }
+      }
+    }
+
+    /* ---------------------------------------------------------------------
+       Game actions
+    --------------------------------------------------------------------- */
+
+
+    function setCoreAriaLabel(label) {
+      if (ui.core.getAttribute("aria-label") !== label) {
+        ui.core.setAttribute("aria-label", label);
+      }
+    }
+
+    function refreshCoreLabelAndAria() {
+      if (singularityPhase === "chaos") {
+        const remaining = Math.max(0, singularityChaosEndsAt - performance.now());
+        ui.coreLabel.textContent = t("coreSingLabel", { seconds: (remaining / 1000).toFixed(1) });
+        ui.coreLabel.classList.add("is-surge");
+        setCoreAriaLabel(t("coreSingAria"));
+        return;
+      }
+
+      if (solarSurgeActive) {
+        const remaining = Math.max(0, solarSurgeEndsAt - performance.now());
+        ui.coreLabel.textContent = t("coreSurgeLabel", { seconds: (remaining / 1000).toFixed(1) });
+        ui.coreLabel.classList.add("is-surge");
+        setCoreAriaLabel(t("coreSurgeAria"));
+        return;
+      }
+
+      ui.coreLabel.textContent = t("tapToCollect");
+      ui.coreLabel.classList.remove("is-surge");
+      setCoreAriaLabel(t("coreTapAria"));
+    }
+
+    function updateSurgeCountdown(remainingMs) {
+      const label = `${Math.max(0, remainingMs / 1000).toFixed(1)}s`;
+      ui.surgeTimer.textContent = ` · ${label}`;
+      refreshCoreLabelAndAria();
+    }
+
+    function setSurgeVisualState(active) {
+      document.body.classList.toggle("is-surging", active);
+      ui.solarOverlay.classList.toggle("is-active", active);
+      ui.clickPill.classList.toggle("is-surge", active);
+      ui.surgeIcon.toggleAttribute("hidden", !active);
+      ui.clickStarIcon.toggleAttribute("hidden", active);
+      ui.surgeTimer.toggleAttribute("hidden", !active);
+
+      if (!active) {
+        ui.surgeTimer.textContent = "";
+        ui.solarEmbers.replaceChildren();
+        ui.solarLicks.replaceChildren();
+      }
+
+      refreshCoreLabelAndAria();
+    }
+
+    function startSolarSurge() {
+      const extended = solarSurgeActive;
+      solarSurgeActive = true;
+      solarSurgeEndsAt = performance.now() + SOLAR_SURGE_DURATION;
+      setSurgeVisualState(true);
+      updateSurgeCountdown(SOLAR_SURGE_DURATION);
+      updateBalance(true);
+
+      if (!extended) {
+        showToast(t("toastSolarSurge"), "gold", 3400);
+      }
+
+
+      if (!prefersReducedMotion()) {
+        ui.clickPill.animate(
+          [
+            { transform: "scale(1)" },
+            { transform: "scale(1.035)", offset: 0.45 },
+            { transform: "scale(1)" }
+          ],
+          { duration: 330, easing: "ease-out" }
+        );
+      }
+
+      if (!extended) {
+        buildSolarLicks();
+        spawnSurgeEmbers(6);
+      }
+    }
+
+    function buildSolarLicks() {
+      if (ui.solarLicks.childElementCount > 0) return;
+      const narrow = window.innerWidth < 620;
+      const count = narrow ? 20 : 30;
+      const classes = ["", " solar-lick--b", " solar-lick--c"];
+
+      for (let i = 0; i < count; i += 1) {
+        const lick = document.createElement("span");
+        const width = (narrow ? 16 : 20) + Math.random() * (narrow ? 27 : 38);
+        const height = (narrow ? 48 : 62) + Math.random() * (narrow ? 86 : 105);
+        lick.className = `solar-lick${classes[Math.floor(Math.random() * classes.length)]}`;
+        lick.style.width = `${width.toFixed(1)}px`;
+        lick.style.height = `${height.toFixed(1)}px`;
+        lick.style.left = `${((i + 0.5) / count) * 100 + (Math.random() * 2.4 - 1.2)}%`;
+        lick.style.marginLeft = `${(-width / 2).toFixed(1)}px`;
+        lick.style.bottom = `${-14 - Math.random() * 16}px`;
+        lick.style.setProperty("--lick-duration", `${(0.95 + Math.random() * 1.2).toFixed(2)}s`);
+        lick.style.setProperty("--lick-delay", `${(-Math.random() * 1.6).toFixed(2)}s`);
+        ui.solarLicks.appendChild(lick);
+      }
+    }
+
+    function endSolarSurge() {
+      if (!solarSurgeActive) return;
+      solarSurgeActive = false;
+      solarSurgeEndsAt = 0;
+      setSurgeVisualState(false);
+      updateBalance(true);
+    }
+
+    function spawnSurgeEmbers(burst = 0) {
+      if (!solarSurgeActive || prefersReducedMotion()) return;
+      const now = performance.now();
+      if (!burst && now - lastSurgeEmberAt < 100) return;
+      lastSurgeEmberAt = now;
+
+      const layer = ui.solarEmbers;
+      if (!layer) return;
+      while (layer.childElementCount > 140) {
+        layer.firstElementChild.remove();
+      }
+
+      const count = burst || (window.innerWidth < 620 ? 2 : 3);
+      const colors = ["#ffe6a3", "#ffc35a", "#ff9c2c", "#ff6b00"];
+
+      for (let i = 0; i < count; i += 1) {
+        const ember = document.createElement("span");
+        const fromSide = Math.random() < 0.22;
+        const size = 1.8 + Math.random() * 2.2;
+        let x;
+        let y;
+        let dx;
+        let dy;
+
+        if (fromSide) {
+          const side = Math.random() < 0.5 ? -1 : 1;
+          x = side < 0 ? 0 : window.innerWidth;
+          y = Math.random() * window.innerHeight;
+          dx = side * -(28 + Math.random() * 130);
+          dy = -(20 + Math.random() * 110);
+        } else {
+          x = Math.random() * window.innerWidth;
+          y = window.innerHeight;
+          dx = Math.random() * 110 - 55;
+          dy = -(90 + Math.random() * 260);
+        }
+
+        ember.className = "solar-ember";
+        ember.style.left = `${x}px`;
+        ember.style.top = `${y}px`;
+        ember.style.setProperty("--dx", `${dx}px`);
+        ember.style.setProperty("--dy", `${dy}px`);
+        ember.style.setProperty("--ember-size", `${size.toFixed(1)}px`);
+        ember.style.setProperty("--ember-color", colors[Math.floor(Math.random() * colors.length)]);
+        ember.style.setProperty("--ember-duration", `${(1.2 + Math.random() * 1.5).toFixed(2)}s`);
+        ember.addEventListener("animationend", () => ember.remove(), { once: true });
+        layer.appendChild(ember);
+      }
+    }
+
+    function tickSolarSurge(now) {
+      if (!solarSurgeActive) return;
+      const remaining = solarSurgeEndsAt - now;
+      if (remaining <= 0) {
+        endSolarSurge();
+        return;
+      }
+      updateSurgeCountdown(remaining);
+      spawnSurgeEmbers();
+    }
+
+
+    function clearSingularityTimers() {
+      singularityTimers.forEach((timer) => clearTimeout(timer));
+      singularityTimers = [];
+    }
+
+    function scheduleSingularity(callback, delay) {
+      const timer = setTimeout(callback, delay);
+      singularityTimers.push(timer);
+      return timer;
+    }
+
+    function triggerSingularityFlash() {
+      ui.singularityFlash.hidden = false;
+      ui.singularityFlash.classList.remove("is-flashing");
+      void ui.singularityFlash.offsetWidth;
+      ui.singularityFlash.classList.add("is-flashing");
+      scheduleSingularity(() => {
+        ui.singularityFlash.hidden = true;
+        ui.singularityFlash.classList.remove("is-flashing");
+      }, 860);
+    }
+
+    function showSingularityMessage(text, stateClass) {
+      ui.singularityMessageText.textContent = text;
+      ui.singularityMessage.className = `singularity-message ${stateClass}`;
+      ui.singularityMessage.hidden = false;
+    }
+
+    function startSingularity() {
+      if (singularityPhase !== "idle") return;
+      clearSingularityTimers();
+      singularityPhase = "opening";
+      singularityClickLocked = true;
+      ui.app.inert = true;
+      state.singularityClicks = 0;
+      ui.singularityFlash.hidden = true;
+      ui.singularityFlash.classList.remove("is-flashing");
+      ui.singularityChaos.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityCurtain.hidden = false;
+      ui.singularityCurtain.classList.remove("is-active");
+      void ui.singularityCurtain.offsetWidth;
+      ui.singularityCurtain.classList.add("is-active");
+      updateSingularityHud();
+      updateUI(true);
+      scheduleSave();
+
+      scheduleSingularity(() => {
+        showSingularityMessage(t("singularityOpened"), "is-opening");
+      }, 1250);
+
+      scheduleSingularity(() => {
+        triggerSingularityFlash();
+      }, 3050);
+
+      scheduleSingularity(beginSingularityChaos, 3350);
+    }
+
+    function beginSingularityChaos() {
+      if (singularityPhase !== "opening") return;
+      singularityPhase = "chaos";
+      singularityClickLocked = false;
+      ui.app.inert = false;
+      singularityChaosEndsAt = performance.now() + SINGULARITY_DURATION;
+      document.body.classList.add("is-singularity");
+      ui.singularityCurtain.classList.remove("is-active");
+      ui.singularityCurtain.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityChaos.hidden = false;
+      updateSingularityHud();
+      refreshCoreLabelAndAria();
+      updateUI(true);
+    }
+
+    function beginSingularityClose() {
+      if (singularityPhase !== "chaos") return;
+      singularityPhase = "closing";
+      singularityChaosEndsAt = 0;
+      document.body.classList.remove("is-singularity");
+      ui.singularityChaos.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      state.singularityClicks = 0;
+      updateSingularityHud();
+      refreshCoreLabelAndAria();
+      updateUI(true);
+      saveGame();
+      triggerSingularityFlash();
+
+      scheduleSingularity(() => {
+        showSingularityMessage(t("singularityClosed"), "is-closing");
+      }, 240);
+
+      scheduleSingularity(() => {
+        ui.singularityMessage.hidden = true;
+        ui.singularityMessage.className = "singularity-message";
+        singularityPhase = "idle";
+        updateSingularityHud();
+        refreshCoreLabelAndAria();
+      }, 3150);
+    }
+
+    function abortSingularity() {
+      clearSingularityTimers();
+      singularityPhase = "idle";
+      singularityChaosEndsAt = 0;
+      singularityClickLocked = false;
+      ui.app.inert = false;
+      document.body.classList.remove("is-singularity");
+      ui.singularityChaos.hidden = true;
+      ui.singularityCurtain.classList.remove("is-active");
+      ui.singularityCurtain.hidden = true;
+      ui.singularityMessage.hidden = true;
+      ui.singularityMessage.className = "singularity-message";
+      ui.singularityFlash.hidden = true;
+      ui.singularityFlash.classList.remove("is-flashing");
+      refreshCoreLabelAndAria();
+      updateSingularityHud();
+    }
+
+    function registerSingularityClick() {
+      if (singularityPhase !== "idle") return;
+      const next = state.singularityClicks + 1;
+
+      if (next >= SINGULARITY_CLICKS_REQUIRED) {
+        state.singularityClicks = 0;
+        startSingularity();
+        return;
+      }
+
+      state.singularityClicks = next;
+      updateSingularityHud();
+    }
+
+    function tickSingularity(now) {
+      if (singularityPhase !== "chaos") return;
+      const remaining = singularityChaosEndsAt - now;
+      if (remaining <= 0) {
+        beginSingularityClose();
+        return;
+      }
+      ui.singularityTimer.textContent = `${(remaining / 1000).toFixed(1)}s`;
+      refreshCoreLabelAndAria();
+    }
+
+    function checkRank() {
+      const nextIndex = rankIndexForTotal(state.totalEarned);
+      if (nextIndex > lastRankIndex) {
+        lastRankIndex = nextIndex;
+        const rank = RANKS[nextIndex];
+        showToast(t("toastRankUp", { rank: t(rank.nameKey) }), "gold", 3200);
+        scheduleSave();
+      }
+    }
+
+    function addEarned(amount) {
+      if (!Number.isFinite(amount) || amount <= 0) return;
+      state.energy += amount;
+      state.totalEarned += amount;
+      checkRank();
+    }
+
+    function collectStardust(x, y) {
+      if (singularityClickLocked) return;
+
+      const now = performance.now();
+      if (now - lastClickAt <= COMBO_WINDOW) {
+        combo = Math.min(MAX_COMBO, combo + 1);
+      } else {
+        combo = 0;
+      }
+      lastClickAt = now;
+
+      clearTimeout(comboTimer);
+      comboTimer = setTimeout(() => {
+        combo = 0;
+        updateCombo();
+      }, COMBO_WINDOW + 80);
+
+      const surgeProc = Math.random() < solarSurgeChance();
+      if (surgeProc) startSolarSurge();
+
+      const isCrit = Math.random() < critChance();
+      const gain = clickValue() * (isCrit ? critMultiplier() : 1);
+
+      addEarned(gain);
+      state.totalClicks += 1;
+      if (gain > state.bestHit) state.bestHit = gain;
+
+      updateUI();
+      bumpBalance();
+      animateCoreHit(isCrit);
+      spawnBurst(x, y, isCrit);
+      registerSingularityClick();
+      scheduleSave();
+    }
+
+    function coreCenter() {
+      const rect = ui.coreStage.getBoundingClientRect();
+      return { x: rect.width / 2, y: rect.height / 2 };
+    }
+
+    function buyUpgrade(def) {
+      const level = state.levels[def.id];
+      if (level >= def.max) return;
+
+      const cost = upgradeCost(def);
+      if (state.energy + 1e-9 < cost) {
+        const missing = cost - state.energy;
+        showToast(t("toastNeedStardust", { amount: formatCost(missing) }), "warning", 2000);
+        const card = cards.get(def.id).card;
+        card.classList.add("is-denied");
+        setTimeout(() => card.classList.remove("is-denied"), 450);
+        return;
+      }
+
+      state.energy -= cost;
+      state.levels[def.id] += 1;
+      const newLevel = state.levels[def.id];
+      const maxed = newLevel >= def.max;
+
+      saveGame();
+      updateShop();
+      updateUI(true);
+
+      const ref = cards.get(def.id);
+      if (ref && !prefersReducedMotion()) {
+        ref.card.animate(
+          [
+            { transform: "scale(1)" },
+            { transform: "scale(1.012)", offset: 0.4 },
+            { transform: "scale(1)" }
+          ],
+          { duration: 240, easing: "ease-out" }
+        );
+      }
+
+      showToast(
+        maxed
+          ? t("toastUpgradeMax", { name: t(def.nameKey) })
+          : t("toastUpgrade", { name: t(def.nameKey), level: newLevel }),
+        maxed ? "gold" : "default",
+        2200
+      );
+    }
+
+    function resetGame() {
+      endSolarSurge();
+      abortSingularity();
+      state = createDefaultState();
+      combo = 0;
+      lastClickAt = -Infinity;
+      lastRankIndex = 0;
+      clearTimeout(comboTimer);
+      lastBalanceValue = null;
+      saveGame();
+      updateShop();
+      updateUI(true);
+      refreshCoreLabelAndAria();
+      showToast(t("toastFresh"), "default", 2600);
+      updateStorageStatus(!storageAvailable);
+    }
+
+    /* ---------------------------------------------------------------------
+       Events
+    --------------------------------------------------------------------- */
+
+    document.querySelectorAll("[data-lang]").forEach((button) => {
+      button.addEventListener("click", () => setLocale(button.dataset.lang));
+    });
+
+    ui.core.addEventListener("click", (event) => {
+      let x;
+      let y;
+      if (event.detail > 0) {
+        const rect = ui.coreStage.getBoundingClientRect();
+        x = clamp(event.clientX - rect.left, 20, rect.width - 20);
+        y = clamp(event.clientY - rect.top, 20, rect.height - 20);
+      } else {
+        const center = coreCenter();
+        x = center.x;
+        y = center.y;
+      }
+      collectStardust(x, y);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.code !== "Space" || event.repeat) return;
+      const target = event.target;
+      const tag = target && target.tagName ? target.tagName : "";
+      if (["BUTTON", "INPUT", "TEXTAREA", "SELECT", "A"].includes(tag)) return;
+      if (ui.resetDialog.open) return;
+      event.preventDefault();
+      const center = coreCenter();
+      collectStardust(center.x, center.y);
+    });
+
+    $("resetBtn").addEventListener("click", () => {
+      if (typeof ui.resetDialog.showModal === "function") {
+        ui.resetDialog.showModal();
+      }
+    });
+
+    $("confirmReset").addEventListener("click", () => {
+      resetGame();
+      ui.resetDialog.close();
+    });
+
+    ui.resetDialog.addEventListener("click", (event) => {
+      if (event.target === ui.resetDialog) {
+        ui.resetDialog.close();
+      }
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        state.lastSeen = hiddenAt;
+        saveGame();
+      } else if (hiddenAt) {
+        const seconds = clamp((Date.now() - hiddenAt) / 1000, 0, OFFLINE_CAP_SECONDS);
+        hiddenAt = null;
+        const earned = autoRate() * seconds;
+        if (earned >= 1) {
+          addEarned(earned);
+          updateUI(true);
+          showToast(t("toastOffline", { amount: formatNumber(earned) }), "gold", 3600);
+          saveGame();
+        }
+        lastTick = performance.now();
+      }
+    });
+
+    window.addEventListener("pagehide", saveGame);
+    window.addEventListener("beforeunload", saveGame);
+
+    /* ---------------------------------------------------------------------
+       Background simulation
+    --------------------------------------------------------------------- */
+
+    function simulationTick() {
+      const now = performance.now();
+      const delta = clamp((now - lastTick) / 1000, 0, 1.5);
+      lastTick = now;
+      if (document.hidden) return;
+
+      tickSolarSurge(now);
+      tickSingularity(now);
+
+      const rate = autoRate();
+      if (rate > 0) {
+        addEarned(rate * delta);
+        updateUI();
+      }
+    }
+
+    setInterval(simulationTick, 100);
+    setInterval(saveGame, SAVE_INTERVAL);
+
+    /* ---------------------------------------------------------------------
+       Starfield
+    --------------------------------------------------------------------- */
+
+    function initStarfield() {
+      const canvas = $("starfield");
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      const reduceMotion = prefersReducedMotion();
+      let width = 0;
+      let height = 0;
+      let stars = [];
+      let frameId = null;
+
+      function makeStars() {
+        const count = Math.round(clamp((width * height) / 11500, 60, 170));
+        stars = Array.from({ length: count }, () => {
+          const colorRoll = Math.random();
+          const color = colorRoll > 0.92 ? "146,130,255" : colorRoll > 0.83 ? "122,247,200" : "235,241,255";
+          return {
+            x: Math.random() * width,
+            y: Math.random() * height,
+            radius: 0.3 + Math.random() * 1.35,
+            alpha: 0.14 + Math.random() * 0.55,
+            phase: Math.random() * Math.PI * 2,
+            speed: 0.0003 + Math.random() * 0.0012,
+            drift: 0.7 + Math.random() * 2.2,
+            color
+          };
+        });
+      }
+
+      function resize() {
+        const dpr = clamp(window.devicePixelRatio || 1, 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        makeStars();
+        if (reduceMotion) draw(0);
+      }
+
+      function draw(time) {
+        ctx.clearRect(0, 0, width, height);
+        for (const star of stars) {
+          const y = reduceMotion ? star.y : (star.y + time * star.drift * 0.001) % height;
+          const alpha = reduceMotion
+            ? star.alpha
+            : star.alpha * (0.62 + 0.38 * Math.sin(time * star.speed + star.phase));
+          ctx.beginPath();
+          ctx.arc(star.x, y, star.radius, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${star.color},${alpha})`;
+          ctx.fill();
+        }
+        if (!reduceMotion) {
+          frameId = requestAnimationFrame(draw);
+        }
+      }
+
+      resize();
+      if (!reduceMotion) {
+        cancelAnimationFrame(frameId);
+        frameId = requestAnimationFrame(draw);
+      }
+
+      let resizeTimer;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          resize();
+          if (!reduceMotion) {
+            cancelAnimationFrame(frameId);
+            frameId = requestAnimationFrame(draw);
+          }
+        }, 150);
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (reduceMotion) return;
+        if (document.hidden) {
+          cancelAnimationFrame(frameId);
+        } else {
+          cancelAnimationFrame(frameId);
+          frameId = requestAnimationFrame(draw);
+        }
+      });
+    }
+
+
+    function applyLanguage(persist = false) {
+      document.documentElement.lang = locale === "zh" ? "zh-Hant" : "en";
+      document.documentElement.dataset.locale = locale;
+      document.title = t("pageTitle");
+      if (ui.metaDescription) {
+        ui.metaDescription.setAttribute("content", t("metaDescription"));
+      }
+
+      document.querySelectorAll("[data-i18n]").forEach((element) => {
+        element.textContent = t(element.dataset.i18n);
+      });
+      document.querySelectorAll("[data-i18n-aria]").forEach((element) => {
+        element.setAttribute("aria-label", t(element.dataset.i18nAria));
+      });
+      document.querySelectorAll("[data-i18n-title]").forEach((element) => {
+        element.setAttribute("title", t(element.dataset.i18nTitle));
+      });
+
+      document.querySelectorAll("[data-lang]").forEach((button) => {
+        const active = button.dataset.lang === locale;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+        const label = button.dataset.lang === "zh" ? t("chinese") : t("english");
+        button.setAttribute("aria-label", label);
+        button.setAttribute("title", label);
+      });
+
+      document.querySelectorAll("[data-site-link]").forEach((link) => {
+        link.href = `index.html?lang=${locale}`;
+      });
+
+      if (ui.toast.classList.contains("is-visible")) {
+        clearTimeout(toastTimer);
+        ui.toast.classList.remove("is-visible");
+      }
+
+      renderShop();
+      updateUI(true);
+      updateStorageStatus(!storageAvailable);
+      refreshCoreLabelAndAria();
+      updateSingularityHud();
+
+      if (!ui.singularityMessage.hidden) {
+        if (ui.singularityMessage.classList.contains("is-opening")) {
+          ui.singularityMessageText.textContent = t("singularityOpened");
+        } else if (ui.singularityMessage.classList.contains("is-closing")) {
+          ui.singularityMessageText.textContent = t("singularityClosed");
+        }
+      }
+
+      if (persist) {
+        try {
+          localStorage.setItem(LOCALE_KEY, locale);
+        } catch (error) {
+          /* Locale still works for this visit. */
+        }
+
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.set("lang", locale);
+          window.history.replaceState({}, "", url);
+        } catch (error) {
+          /* History is optional. */
+        }
+      }
+    }
+
+    function setLocale(nextLocale) {
+      const next = normalizeLocale(nextLocale);
+      if (next === locale) return;
+      locale = next;
+      applyLanguage(true);
+    }
+
+    /* ---------------------------------------------------------------------
+       Boot
+    --------------------------------------------------------------------- */
+
+    function boot() {
+      const { offlineEarned, offlineSeconds } = loadGame();
+      applyLanguage(false);
+      initStarfield();
+      if (document.hidden) hiddenAt = Date.now();
+      saveGame();
+
+      if (offlineEarned >= 1 && offlineSeconds >= 30) {
+        setTimeout(() => {
+          showToast(t("toastWelcome", { amount: formatNumber(offlineEarned) }), "gold", 3600);
+        }, 550);
+      }
+
+      if (!storageAvailable) {
+        setTimeout(() => {
+          showToast(t("toastStorage"), "warning", 4200);
+        }, 900);
+      }
+
+      lastTick = performance.now();
+    }
+
+    boot();
+  </script>
+</body>
+</html>
