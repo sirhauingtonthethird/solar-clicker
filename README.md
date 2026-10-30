@@ -8,6 +8,8 @@ After the first deployment: https://sirhauingtonthethird.github.io/solar-clicker
 
 Click the core to gather stardust, chain combos, and buy upgrades. Rare **Solar Surges** set the screen border on fire and multiply each click by **×3.5**.
 
+Every click also charges the **Singularity** meter at the top of the screen. At 500 charge, the screen fades to black, the singularity opens for 30 seconds of purple chaos and **×10 click power**, then closes again. The game is fully silent.
+
 ## Local development
 
 Open `index.html` in a browser. There is no build step and no external dependencies.
